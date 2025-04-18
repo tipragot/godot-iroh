@@ -50,14 +50,17 @@ multiplayer.multiplayer_peer = client
 
 Replace `"CONNECTION_STRING"` with the string provided by the host server.
 
-After initializing the peer, all other methods are the same as in the [godot documentation](https://docs.godotengine.org/en/stable/tutorials/networking/high_level_multiplayer.htm) (without the [Initializing the network](https://docs.godotengine.org/en/stable/tutorials/networking/high_level_multiplayer.html#initializing-the-network) part).
+After initializing the peer, all other methods are the same as in the [godot documentation](https://docs.godotengine.org/en/stable/tutorials/networking/high_level_multiplayer.html) (without the [Initializing the network](https://docs.godotengine.org/en/stable/tutorials/networking/high_level_multiplayer.html#initializing-the-network) part).
 
 ### Handle Client Errors
 
-```
+To handle connection failures on the client side, you can connect to the connection_failed signal:
+
+```gdscript
 multiplayer.connection_failed.connect(func():
     print("Connection error: ", client.connection_error()))
 ```
+This allows you to gracefully handle cases where the client cannot connect to the host.
 
 ## Examples
 
