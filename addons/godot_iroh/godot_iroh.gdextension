@@ -1,0 +1,11 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = 4.1
+
+[libraries]
+linux.debug.x86_64 =     "res://addons/godot_iroh/godot_iroh.so"
+linux.release.x86_64 =   "res://addons/godot_iroh/godot_iroh.so"
+windows.debug.x86_64 =   "res://addons/godot_iroh/godot_iroh.dll"
+windows.release.x86_64 = "res://addons/godot_iroh/godot_iroh.dll"
+macos.debug =            "res://addons/godot_iroh/godot_iroh.dylib"
+macos.release =          "res://addons/godot_iroh/godot_iroh.dylib"

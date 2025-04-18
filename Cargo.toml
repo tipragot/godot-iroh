@@ -1,0 +1,15 @@
+[package]
+name = "godot_iroh"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+tokio = { version = "1.44.1", features = ["rt-multi-thread"] }
+iroh = { version = "0.34.0", default-features = false }
+godot = "0.2.4"
+anyhow = "1.0.97"
+bytes = "1.10.1"
+base64 = "0.22.1"
