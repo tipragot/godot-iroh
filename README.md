@@ -6,7 +6,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <img src="images/logo.svg" alt="Logo" width="300"></p>
+  <img src="images/logo.svg" alt="Logo" width="300">
   <h3 align="center">Godot Iroh</h3>
   <p align="center">
     <br />
