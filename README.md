@@ -24,7 +24,7 @@
 
 ## Usage
 
-This plugin allows you to establish peer-to-peer multiplayer connections in Godot without relying on a centralized server. It uses a host to initialize the connection, leveraging the power of [Iroh](https://www.iroh.computer/).
+This plugin allows you to establish peer-to-peer multiplayer connections in Godot without relying on a centralized server, leveraging the power of [Iroh](https://www.iroh.computer/).
 
 ### Starting a Server
 
@@ -64,7 +64,7 @@ To handle connection failures on the client side, you can connect to the connect
 multiplayer.connection_failed.connect(func():
     print("Connection error: ", client.connection_error()))
 ```
-This allows you to gracefully handle cases where the client cannot connect to the host.
+This allows you to gracefully handle cases where the client cannot connect to the server.
 
 ## Examples
 
