@@ -10,7 +10,7 @@
   <h3 align="center">Godot Iroh</h3>
   <p align="center">
     <br />
-    An Godot multiplayer peer extension using <a href="https://www.iroh.computer/">Iroh</a>  
+    A peer-to-peer multiplayer extension for Godot based on <a href="https://www.iroh.computer/">Iroh</a>.
   </p>
 </div>
 
@@ -24,7 +24,7 @@ Todo
 
 This plugin allows you to establish peer-to-peer multiplayer connections in Godot without relying on a centralized server. It uses a host to initialize the connection, leveraging the power of [Iroh](https://www.iroh.computer/).
 
-### Starting a Host (Server)
+### Starting a Server
 
 To start a server and set it as the multiplayer peer:
 
@@ -33,28 +33,30 @@ var server := IrohServer.start()
 multiplayer.multiplayer_peer = server
 ```
 
-You can retrieve the connection string (to share with clients) using:
+You can retrieve the connection string (used to connect to this server) using:
 
 ```gdscript
 server.connection_string()
 ```
 
+After initializing the peer, you can use the [High-level multiplayer](https://docs.godotengine.org/en/stable/tutorials/networking/high_level_multiplayer.html) of Godot as normal.
+
 ### Connecting as a Client
 
-To connect to an existing host using the connection string:
+To connect to an existing server using the connection string:
 
 ```gdscript
 var client = IrohClient.connect("CONNECTION_STRING")
 multiplayer.multiplayer_peer = client
 ```
 
-Replace `"CONNECTION_STRING"` with the string provided by the host server.
+Replace `"CONNECTION_STRING"` with the string provided by the client acting as the server.
 
-After initializing the peer, all other methods are the same as in the [godot documentation](https://docs.godotengine.org/en/stable/tutorials/networking/high_level_multiplayer.html) (without the [Initializing the network](https://docs.godotengine.org/en/stable/tutorials/networking/high_level_multiplayer.html#initializing-the-network) part).
+After initializing the peer, you can use the [High-level multiplayer](https://docs.godotengine.org/en/stable/tutorials/networking/high_level_multiplayer.html) as normal.
 
 ### Handle Client Errors
 
-To handle connection failures on the client side, you can connect to the connection_failed signal:
+To handle connection failures on the client side, you can connect to the connection_failed signal and get the error message with the `connection_error` function:
 
 ```gdscript
 multiplayer.connection_failed.connect(func():
