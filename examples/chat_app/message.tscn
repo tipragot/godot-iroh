@@ -1,0 +1,65 @@
+[gd_scene load_steps=5 format=3 uid="uid://d2p5knjyhrsru"]
+
+[ext_resource type="Script" uid="uid://b4vnbv54yw5b7" path="res://message.gd" id="1_d26o2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ds1fw"]
+bg_color = Color(0.22, 0.22, 0.22, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d26o2"]
+bg_color = Color(0.15, 0.15, 0.15, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ds1fw"]
+properties/0/path = NodePath("MessageContent/Margin/Content:text")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+
+[node name="Message" type="HBoxContainer"]
+offset_right = 111.0
+offset_bottom = 33.0
+size_flags_horizontal = 3
+script = ExtResource("1_d26o2")
+
+[node name="MessageContent" type="PanelContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_ds1fw")
+
+[node name="Margin" type="MarginContainer" parent="MessageContent"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 5
+
+[node name="Content" type="Label" parent="MessageContent/Margin"]
+layout_mode = 2
+text = "Hello World"
+
+[node name="MessageDelete" type="Button" parent="."]
+visible = false
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxFlat_ds1fw")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxFlat_ds1fw")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_ds1fw")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxFlat_ds1fw")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_ds1fw")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxFlat_ds1fw")
+theme_override_styles/hover = SubResource("StyleBoxFlat_d26o2")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxFlat_ds1fw")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ds1fw")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxFlat_ds1fw")
+theme_override_styles/normal = SubResource("StyleBoxFlat_ds1fw")
+text = "   X   "
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_ds1fw")
+
+[connection signal="pressed" from="MessageDelete" to="." method="_on_message_delete_pressed"]

@@ -1,0 +1,139 @@
+[gd_scene load_steps=3 format=3 uid="uid://bypi2idfwf68b"]
+
+[ext_resource type="Script" uid="uid://cunh7tw7tvqtp" path="res://connection_menu.gd" id="1_0xm2m"]
+[ext_resource type="Script" uid="uid://dxlhc8jc65lg1" path="res://chat_menu.gd" id="2_h2yge"]
+
+[node name="ChatExample" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ConnectionMenu" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -217.5
+offset_top = -33.0
+offset_right = 217.5
+offset_bottom = 33.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+script = ExtResource("1_0xm2m")
+
+[node name="JoinBox" type="HBoxContainer" parent="ConnectionMenu"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ConnectionString" type="LineEdit" parent="ConnectionMenu/JoinBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Connection String"
+
+[node name="JoinRoom" type="Button" parent="ConnectionMenu/JoinBox"]
+layout_mode = 2
+text = "Join Room"
+
+[node name="CreateRoom" type="Button" parent="ConnectionMenu"]
+layout_mode = 2
+text = "Create Room"
+
+[node name="ErrorLabel" type="Label" parent="ConnectionMenu"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+
+[node name="ChatMenu" type="MarginContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+script = ExtResource("2_h2yge")
+
+[node name="MessageInterface" type="VBoxContainer" parent="ChatMenu"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ServerInterface" type="HBoxContainer" parent="ChatMenu/MessageInterface"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="InfoLabel" type="Label" parent="ChatMenu/MessageInterface/ServerInterface"]
+layout_mode = 2
+text = "Connection String :"
+
+[node name="ConnectionString" type="RichTextLabel" parent="ChatMenu/MessageInterface/ServerInterface"]
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+text = "Connection String"
+fit_content = true
+vertical_alignment = 1
+selection_enabled = true
+
+[node name="CopyClipboard" type="Button" parent="ChatMenu/MessageInterface/ServerInterface"]
+layout_mode = 2
+text = "Copy Connection String"
+
+[node name="StopServer" type="Button" parent="ChatMenu/MessageInterface/ServerInterface"]
+layout_mode = 2
+text = "Stop Server"
+
+[node name="ClientInterface" type="HBoxContainer" parent="ChatMenu/MessageInterface"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 2
+
+[node name="Disconnect" type="Button" parent="ChatMenu/MessageInterface/ClientInterface"]
+layout_mode = 2
+text = "Disconnect"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="ChatMenu/MessageInterface"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MessageList" type="VBoxContainer" parent="ChatMenu/MessageInterface/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SendInterface" type="HBoxContainer" parent="ChatMenu/MessageInterface"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MessageContent" type="LineEdit" parent="ChatMenu/MessageInterface/SendInterface"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Message Content"
+
+[node name="SendMessage" type="Button" parent="ChatMenu/MessageInterface/SendInterface"]
+layout_mode = 2
+text = "Send Message"
+
+[node name="MessageSpawner" type="MultiplayerSpawner" parent="ChatMenu"]
+_spawnable_scenes = PackedStringArray("uid://d2p5knjyhrsru")
+spawn_path = NodePath("../MessageInterface/ScrollContainer/MessageList")
+
+[connection signal="server_started" from="ConnectionMenu" to="ChatMenu" method="_on_server_started"]
+[connection signal="pressed" from="ConnectionMenu/JoinBox/JoinRoom" to="ConnectionMenu" method="_on_join_room_pressed"]
+[connection signal="pressed" from="ConnectionMenu/CreateRoom" to="ConnectionMenu" method="_on_create_room_pressed"]
+[connection signal="server_stopped" from="ChatMenu" to="ConnectionMenu" method="_on_server_stopped"]
+[connection signal="pressed" from="ChatMenu/MessageInterface/ServerInterface/CopyClipboard" to="ChatMenu" method="_on_copy_clipboard_pressed"]
+[connection signal="pressed" from="ChatMenu/MessageInterface/ServerInterface/StopServer" to="ChatMenu" method="_on_stop_server_pressed"]
+[connection signal="pressed" from="ChatMenu/MessageInterface/ClientInterface/Disconnect" to="ChatMenu" method="_on_disconnect_pressed"]
+[connection signal="child_entered_tree" from="ChatMenu/MessageInterface/ScrollContainer/MessageList" to="ChatMenu" method="_on_message_list_child_entered_tree"]
+[connection signal="text_submitted" from="ChatMenu/MessageInterface/SendInterface/MessageContent" to="ChatMenu" method="_on_message_content_text_submitted"]
+[connection signal="pressed" from="ChatMenu/MessageInterface/SendInterface/SendMessage" to="ChatMenu" method="_on_send_message_pressed"]
