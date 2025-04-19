@@ -85,6 +85,9 @@ jobs:
           name: package
           path: .
 
+      - name: Copy license
+        run: cp LICENSE addons/godot_iroh/.
+
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
