@@ -18,7 +18,9 @@
 
 ## Installation
 
-Todo
+- Download the latest release from [releases](https://github.com/tipragot/godot-iroh/releases).
+- Extract the archive in your Godot project folder.
+- That's it! You're all set!
 
 ## Usage
 
