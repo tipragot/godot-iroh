@@ -36,6 +36,12 @@ struct IrohClient {
 
 #[godot_api]
 impl IrohClient {
+    /// Connect to an existing server using the connection string.
+    ///
+    /// If there is an error connecting to the server, the
+    /// `multiplayer.connection_failed` signal will be emitted
+    /// and the error message will be returned by the
+    /// [Self::connection_error] function.
     #[func]
     fn connect(node_id: GString) -> Gd<Self> {
         let node_id = node_id.to_string();
@@ -57,6 +63,10 @@ impl IrohClient {
         })
     }
 
+    /// Returns the error message that occurred when connecting to the server.
+    ///
+    /// This function should be called after receiving the
+    /// `multiplayer.connection_failed` signal.
     #[func]
     fn connection_error(&self) -> GString {
         if let ClientStatus::Failed(error) = &self.status {

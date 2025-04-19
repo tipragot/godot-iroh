@@ -29,6 +29,10 @@ struct IrohServer {
 
 #[godot_api]
 impl IrohServer {
+    /// Starts a server that is listening for incoming connections.
+    ///
+    /// Other clients can connect to this server by calling the connect function on `IrohClient`
+    /// using the connection string returned by the [Self::connection_string] function.
     #[func]
     fn start() -> Gd<Self> {
         let listener = match IrohRuntime::block_on(IrohListener::new()) {
@@ -51,6 +55,7 @@ impl IrohServer {
         })
     }
 
+    /// Returns the connection string that can be used to connect to this server.
     #[func]
     fn connection_string(&self) -> GString {
         GString::from(self.listener.connection_string())
