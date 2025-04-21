@@ -22,6 +22,12 @@ I am unable to test the addon on macOS. If you encounter any issues or if the ad
 
 ## Installation
 
+### Installation via Asset Library
+
+The addon is accessible on the Godot Asset Library [here](https://godotengine.org/asset-library/asset/3948).
+
+### Manual Installation
+
 - Download the latest release from [releases](https://github.com/tipragot/godot-iroh/releases).
 - Extract the archive in your Godot project folder.
 - That's it! You're all set!
