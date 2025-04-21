@@ -16,6 +16,10 @@
 
 ---
 
+## Note for macOS Users
+
+I am unable to test the addon on macOS. If you encounter any issues or if the addon works for you, please create an issue in this repository to let me know.
+
 ## Installation
 
 - Download the latest release from [releases](https://github.com/tipragot/godot-iroh/releases).
