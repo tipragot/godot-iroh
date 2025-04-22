@@ -66,10 +66,10 @@ jobs:
           merge-multiple: true
 
       - name: Building a macOS universal lib
-        run: lipo -create -output addons/godot_iroh/godot_iroh.dylib godot_iroh_x64.dylib addons/godot_iroh/godot_iroh_arm.dylib
+        run: lipo -create -output addons/godot_iroh/godot_iroh.dylib addons/godot_iroh/godot_iroh_x64.dylib addons/godot_iroh/godot_iroh_arm.dylib
 
       - name: Remove individual binaries
-        run: rm godot_iroh_x64.dylib addons/godot_iroh/godot_iroh_arm.dylib
+        run: rm addons/godot_iroh/godot_iroh_x64.dylib addons/godot_iroh/godot_iroh_arm.dylib
 
       - name: Create zip archive
         run: |
