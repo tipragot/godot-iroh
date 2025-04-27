@@ -8,7 +8,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 tokio = { version = "1.44.2", features = ["rt-multi-thread"] }
-iroh = { version = "0.34.0", default-features = false }
+iroh = { version = "0.34.1", default-features = false }
 godot = "0.2.4"
 anyhow = "1.0.98"
 bytes = "1.10.1"
