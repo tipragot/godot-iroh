@@ -1,0 +1,7 @@
+[target.armv7-linux-androideabi]
+# --- IMPORTANT: ADJUST THE PATHS BELOW ---
+# Replace '/path/to/your/ndk' with the real path to your NDK installation in WSL
+# Replace '21' with your desired Android API Level (e.g., 21, 24, etc. - check your NDK!)
+linker = "/home/hassanch/Android/ndk/27.2.12479018/toolchains/llvm/prebuilt//linux-x86_64/bin/armv7a-linux-androideabi34-clang"
+ar = "/home/hassanch/Android/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+# --- ---
