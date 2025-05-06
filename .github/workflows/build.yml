@@ -5,6 +5,8 @@ on:
     tags:
       - "v*.*.*"
 
+  workflow_dispatch:
+
 jobs:
   build:
     name: Build - ${{ matrix.target }}
