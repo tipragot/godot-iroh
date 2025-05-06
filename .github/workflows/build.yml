@@ -34,15 +34,15 @@ jobs:
             bin: godot_iroh.dll
             final_name: godot_iroh.dll
 
-          - runner: macos-latest
-            target: x86_64-apple-darwin
-            bin: libgodot_iroh.dylib
-            final_name: godot_iroh_x64.dylib
+          #- runner: macos-latest
+           # target: x86_64-apple-darwin
+           # bin: libgodot_iroh.dylib
+            #final_name: godot_iroh_x64.dylib
 
-          - runner: macos-latest
-            target: aarch64-apple-darwin
-            bin: libgodot_iroh.dylib
-            final_name: godot_iroh_arm.dylib
+          #- #runner: macos-latest
+            #target: aarch64-apple-darwin
+            #bin: libgodot_iroh.dylib
+            #final_name: godot_iroh_arm.dylib
 
     steps:
       - uses: actions/checkout@v4
