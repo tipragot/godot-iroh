@@ -50,7 +50,22 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
+      - name: Install cargo-ndk
+        if: startsWith(matrix.target, 'aarch64-linux-android') || startsWith(matrix.target, 'armv7-linux-androideabi')
+        run: cargo install cargo-ndk
+
+      - name: Setup Android NDK
+        if: startsWith(matrix.target, 'aarch64-linux-android') || startsWith(matrix.target, 'armv7-linux-androideabi')
+        uses: nttld/setup-ndk@v1.5.0
+        with:
+          ndk-version: r27c
+
+      - name: Install Java
+        if: startsWith(matrix.target, 'aarch64-linux-android') || startsWith(matrix.target, 'armv7-linux-androideabi')
+        run: sudo apt-get install -y openjdk-17-jdk
+
       - name: Build rust binary
+        if: startsWith(matrix.target, 'x86_64-unknown-linux-gnu') || startsWith(matrix.target, 'x86_64-pc-windows-msvc') || startsWith(matrix.target, 'x86_64-apple-darwin')
         run: cargo build --verbose --locked --release --target ${{ matrix.target }}
         
       - name: Build rust binary for android
