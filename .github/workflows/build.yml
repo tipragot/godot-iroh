@@ -17,6 +17,16 @@ jobs:
             bin: libgodot_iroh.so
             final_name: godot_iroh.so
 
+          - runner: ubuntu-latest
+            target: aarch64-linux-android
+            bin: libgodot_iroh.so
+            final_name: godot_iroh_arm64.so
+          
+          - runner: ubuntu-latest
+            target: armv7-linux-androideabi
+            bin: libgodot_iroh.so
+            final_name: godot_iroh_armv7.so
+
           - runner: windows-latest
             target: x86_64-pc-windows-msvc
             bin: godot_iroh.dll
@@ -42,6 +52,10 @@ jobs:
 
       - name: Build rust binary
         run: cargo build --verbose --locked --release --target ${{ matrix.target }}
+        
+      - name: Build rust binary for android
+        if: startsWith(matrix.target, 'aarch64-linux-android') || startsWith(matrix.target, 'armv7-linux-androideabi')
+        run: cargo ndk -t ${{ matrix.target }} -o target/${{ matrix.target }}/release -- cargo build --release --target ${{ matrix.target }}
 
       - name: Rename binary to final_name
         run: mv target/${{ matrix.target }}/release/${{ matrix.bin }} target/${{ matrix.target }}/release/${{ matrix.final_name }}
