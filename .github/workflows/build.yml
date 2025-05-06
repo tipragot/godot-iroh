@@ -62,9 +62,14 @@ jobs:
         with:
           ndk-version: r27c
 
-      - name: Install Java
+      - name: Setup Java JDK
         if: startsWith(matrix.target, 'aarch64-linux-android') || startsWith(matrix.target, 'armv7-linux-androideabi')
-        run: sudo apt-get install -y openjdk-17-jdk
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: true
+          java-package: jdk
+        uses: actions/setup-java@v4.7.1
 
       - name: Build rust binary
         if: startsWith(matrix.target, 'x86_64-unknown-linux-gnu') || startsWith(matrix.target, 'x86_64-pc-windows-msvc') || startsWith(matrix.target, 'x86_64-apple-darwin')
