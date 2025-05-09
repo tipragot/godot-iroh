@@ -64,7 +64,6 @@ jobs:
         uses: nttld/setup-ndk@v1.5.0
         with:
           ndk-version: r27c
-          cache: true
 
       - name: Setup Java JDK
         if: startsWith(matrix.target, 'aarch64-linux-android') || startsWith(matrix.target, 'armv7-linux-androideabi')
