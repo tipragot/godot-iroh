@@ -14,10 +14,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            bin: libgodot_iroh.so
-            final_name: godot_iroh.so
+          # - runner: ubuntu-latest
+          #   target: x86_64-unknown-linux-gnu
+          #   bin: libgodot_iroh.so
+          #   final_name: godot_iroh.so
 
           - runner: ubuntu-latest
             target: aarch64-linux-android
@@ -29,20 +29,20 @@ jobs:
             bin: libgodot_iroh.so
             final_name: godot_iroh_armv7.so
 
-          - runner: windows-latest
-            target: x86_64-pc-windows-msvc
-            bin: godot_iroh.dll
-            final_name: godot_iroh.dll
+          # - runner: windows-latest
+          #   target: x86_64-pc-windows-msvc
+          #   bin: godot_iroh.dll
+          #   final_name: godot_iroh.dll
 
-          - runner: macos-latest
-            target: x86_64-apple-darwin
-            bin: libgodot_iroh.dylib
-            final_name: godot_iroh_x64.dylib
+          # - runner: macos-latest
+          #   target: x86_64-apple-darwin
+          #   bin: libgodot_iroh.dylib
+          #   final_name: godot_iroh_x64.dylib
 
-          - runner: macos-latest
-            target: aarch64-apple-darwin
-            bin: libgodot_iroh.dylib
-            final_name: godot_iroh_arm.dylib
+          # - runner: macos-latest
+          #   target: aarch64-apple-darwin
+          #   bin: libgodot_iroh.dylib
+          #   final_name: godot_iroh_arm.dylib
 
     steps:
       - uses: actions/checkout@v4
@@ -56,6 +56,7 @@ jobs:
       - name: Install cargo-ndk
         if: startsWith(matrix.target, 'aarch64-linux-android') || startsWith(matrix.target, 'armv7-linux-androideabi')
         run: cargo install cargo-ndk
+        run: rustup target add aarch64-linux-android armv7-linux-androideabi 
 
       - name: Setup Android NDK
         if: startsWith(matrix.target, 'aarch64-linux-android') || startsWith(matrix.target, 'armv7-linux-androideabi')
@@ -74,12 +75,13 @@ jobs:
           java-package: jdk
        
 
-      - name: Build rust binary
-        if: startsWith(matrix.target, 'x86_64-unknown-linux-gnu') || startsWith(matrix.target, 'x86_64-pc-windows-msvc') || startsWith(matrix.target, 'x86_64-apple-darwin')
-        run: cargo build --verbose --locked --release --target ${{ matrix.target }}
+      # - name: Build rust binary
+      #   if: startsWith(matrix.target, 'x86_64-unknown-linux-gnu') || startsWith(matrix.target, 'x86_64-pc-windows-msvc') || startsWith(matrix.target, 'x86_64-apple-darwin')
+      #   run: cargo build --verbose --locked --release --target ${{ matrix.target }}
         
       - name: Build rust binary for android
         if: startsWith(matrix.target, 'aarch64-linux-android') || startsWith(matrix.target, 'armv7-linux-androideabi')
+        
         run: cargo ndk -t ${{ matrix.target }} -o target/${{ matrix.target }}/release -- cargo build --release --target ${{ matrix.target }}
 
       - name: Rename binary to final_name
@@ -110,6 +112,9 @@ jobs:
       - name: Remove individual binaries
         run: rm addons/godot_iroh/godot_iroh_x64.dylib addons/godot_iroh/godot_iroh_arm.dylib
 
+      - name: Copy license to package
+        run: cp LICENSE addons/godot_iroh/
+
       - name: Create zip archive
         run: |
           zip -r godot_iroh.zip addons
@@ -134,9 +139,6 @@ jobs:
         with:
           name: package
           path: .
-
-      - name: Copy license
-        run: cp LICENSE addons/godot_iroh/.
 
       - name: Create Release
         id: create_release
