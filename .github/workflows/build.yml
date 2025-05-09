@@ -32,7 +32,7 @@ jobs:
             target: aarch64-apple-darwin
             bin: libgodot_iroh.dylib
             final_name: godot_iroh_arm.dylib
-          # Android build
+          
           - runner: ubuntu-latest
             target: aarch64-linux-android
             bin: libgodot_iroh.so
@@ -51,7 +51,7 @@ jobs:
         with:
           targets: ${{ matrix.target }}
           cache: true
-      #  The dependencies required for building the Android target
+      
       - name: Install cargo-ndk
         if: startsWith(matrix.target, 'aarch64-linux-android') || startsWith(matrix.target, 'armv7-linux-androideabi')
         run: |
