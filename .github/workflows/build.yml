@@ -55,8 +55,9 @@ jobs:
 
       - name: Install cargo-ndk
         if: startsWith(matrix.target, 'aarch64-linux-android') || startsWith(matrix.target, 'armv7-linux-androideabi')
-        run: cargo install cargo-ndk
-        run: rustup target add aarch64-linux-android armv7-linux-androideabi 
+        run: |
+          cargo install cargo-ndk
+          rustup target add aarch64-linux-android armv7-linux-androideabi
 
       - name: Setup Android NDK
         if: startsWith(matrix.target, 'aarch64-linux-android') || startsWith(matrix.target, 'armv7-linux-androideabi')
