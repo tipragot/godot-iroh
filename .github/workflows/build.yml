@@ -58,6 +58,8 @@ jobs:
         run: |
           cargo install cargo-ndk
           rustup target add aarch64-linux-android 
+          rustup target install aarch64-linux-android
+          rustup target install armv7-linux-androideabi
           rustup target add armv7-linux-androideabi
 
       - name: Setup Android NDK
@@ -81,8 +83,7 @@ jobs:
         
       - name: Build rust binary for android
         if: startsWith(matrix.target, 'aarch64-linux-android') || startsWith(matrix.target, 'armv7-linux-androideabi')
-        run: cargo ndk -t ${{ matrix.target }} -- cargo build --release --target ${{ matrix.target }}
-
+        run: cargo ndk -t ${{ matrix.target }} build --release --verbose
       - name: Rename binary to final_name
         run: mv target/${{ matrix.target }}/release/${{ matrix.bin }} target/${{ matrix.target }}/release/${{ matrix.final_name }}
 
