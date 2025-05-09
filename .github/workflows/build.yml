@@ -14,11 +14,6 @@ jobs:
     strategy:
       matrix:
         include:
-          # - runner: ubuntu-latest
-          #   target: x86_64-unknown-linux-gnu
-          #   bin: libgodot_iroh.so
-          #   final_name: godot_iroh.so
-
           - runner: ubuntu-latest
             target: aarch64-linux-android
             bin: libgodot_iroh.so
@@ -28,21 +23,6 @@ jobs:
             target: armv7-linux-androideabi
             bin: libgodot_iroh.so
             final_name: godot_iroh_armv7.so
-
-          # - runner: windows-latest
-          #   target: x86_64-pc-windows-msvc
-          #   bin: godot_iroh.dll
-          #   final_name: godot_iroh.dll
-
-          # - runner: macos-latest
-          #   target: x86_64-apple-darwin
-          #   bin: libgodot_iroh.dylib
-          #   final_name: godot_iroh_x64.dylib
-
-          # - runner: macos-latest
-          #   target: aarch64-apple-darwin
-          #   bin: libgodot_iroh.dylib
-          #   final_name: godot_iroh_arm.dylib
 
     steps:
       - uses: actions/checkout@v4
@@ -76,14 +56,10 @@ jobs:
           distribution: 'temurin'
           java-package: jdk
        
-
-      # - name: Build rust binary
-      #   if: startsWith(matrix.target, 'x86_64-unknown-linux-gnu') || startsWith(matrix.target, 'x86_64-pc-windows-msvc') || startsWith(matrix.target, 'x86_64-apple-darwin')
-      #   run: cargo build --verbose --locked --release --target ${{ matrix.target }}
-        
       - name: Build rust binary for android
         if: startsWith(matrix.target, 'aarch64-linux-android') || startsWith(matrix.target, 'armv7-linux-androideabi')
         run: cargo ndk -t ${{ matrix.target }} build --release --verbose
+
       - name: Rename binary to final_name
         run: mv target/${{ matrix.target }}/release/${{ matrix.bin }} target/${{ matrix.target }}/release/${{ matrix.final_name }}
 
@@ -94,7 +70,7 @@ jobs:
           path: "target/${{ matrix.target }}/release/${{ matrix.final_name }}"
 
   package:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     needs: build
 
     steps:
@@ -105,12 +81,6 @@ jobs:
         with:
           path: addons/godot_iroh
           merge-multiple: true
-
-      - name: Building a macOS universal lib
-        run: lipo -create -output addons/godot_iroh/godot_iroh.dylib addons/godot_iroh/godot_iroh_x64.dylib addons/godot_iroh/godot_iroh_arm.dylib
-
-      - name: Remove individual binaries
-        run: rm addons/godot_iroh/godot_iroh_x64.dylib addons/godot_iroh/godot_iroh_arm.dylib
 
       - name: Copy license to package
         run: cp LICENSE addons/godot_iroh/
