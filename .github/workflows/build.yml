@@ -113,7 +113,7 @@ jobs:
         run: |
           mkdir godot_iroh
           mv addons godot_iroh/.
-          zip -r godot_iroh.zip addons
+          zip -r godot_iroh.zip godot_iroh
 
       - name: Upload package artifact
         uses: actions/upload-artifact@v4
