@@ -2,8 +2,6 @@ name: jobs/build
 
 on:
   push:
-    tags:
-      - "v*.*.*"
 
 jobs:
   build:
@@ -122,6 +120,7 @@ jobs:
           path: godot_iroh.zip
 
   release:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: package
     permissions:
@@ -130,16 +129,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check for version change
+        id: version_check
+        run: |
+          new_version=$(grep '^version =' Cargo.toml | head -n1 | sed -E 's/version = "(.*)"/\1/' | tr -d '\r')
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+          git show HEAD~1:Cargo.toml > old_Cargo.toml
+          old_version=$(grep '^version =' old_Cargo.toml | head -n1 | sed -E 's/version = "(.*)"/\1/' | tr -d '\r')
+          echo "old_version=$old_version" >> $GITHUB_OUTPUT
+          if [ "$new_version" != "$old_version" ]; then
+            echo "version_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "version_changed=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Download package artifact
+        if: steps.version_check.outputs.version_changed == 'true'
         uses: actions/download-artifact@v4
         with:
           name: package
           path: .
 
       - name: Copy license
+        if: steps.version_check.outputs.version_changed == 'true'
         run: cp LICENSE addons/godot_iroh/.
 
       - name: Create Release
+        if: steps.version_check.outputs.version_changed == 'true'
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
