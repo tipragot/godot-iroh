@@ -130,13 +130,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Check for version change
         id: version_check
         run: |
           new_version=$(grep '^version =' Cargo.toml | head -n1 | sed -E 's/version = "(.*)"/\1/' | tr -d '\r')
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
-          git fetch origin main
           git show HEAD~1:Cargo.toml > old_Cargo.toml
           old_version=$(grep '^version =' old_Cargo.toml | head -n1 | sed -E 's/version = "(.*)"/\1/' | tr -d '\r')
           echo "old_version=$old_version" >> $GITHUB_OUTPUT
