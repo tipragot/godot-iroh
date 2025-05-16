@@ -35,12 +35,12 @@ jobs:
           - runner: ubuntu-latest
             target: aarch64-linux-android
             bin: libgodot_iroh.so
-            final_name: godot_iroh_arm64.so
+            final_name: libgodot_iroh_arm64.so
 
           - runner: ubuntu-latest
             target: armv7-linux-androideabi
             bin: libgodot_iroh.so
-            final_name: godot_iroh_armv7.so
+            final_name: libgodot_iroh_armv7.so
 
     steps:
       - uses: actions/checkout@v4
