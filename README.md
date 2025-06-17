@@ -16,6 +16,19 @@
 
 ---
 
+## Supported Platforms
+
+Godot Iroh currently supports exports for the following platforms:
+
+- **Windows**
+- **macOS**
+- **Linux**
+- **Android**
+
+### Web (WASM) Export Status
+
+Web export support (for browsers) is currently **not supported**. More information can be found in [this issue](https://github.com/tipragot/godot-iroh/issues/48).
+
 ## Installation
 
 ### Installation via Asset Library
@@ -75,3 +88,11 @@ This allows you to gracefully handle cases where the client cannot connect to th
 ## Examples
 
 For more examples, see the [examples](examples/) folder in this repository.
+
+## Contributing
+
+Contributions are very welcome! If you find any issues, have ideas for improvements, or want to add new features, please feel free to open an issue or submit a pull request.
+
+I would be delighted to review and merge your contributions to help make Godot Iroh even better. Whether it's bug fixes, documentation improvements, or new functionality, your help is greatly appreciated!
+
+Thank you for helping to grow this project!
