@@ -60,6 +60,26 @@ impl IrohServer {
     fn connection_string(&self) -> GString {
         GString::from(self.listener.connection_string())
     }
+
+    /// Connect to an other server using the connection string.
+    #[func]
+    fn connect(&mut self, connection_string: GString) {
+        let node_id = connection_string.to_string();
+        let peer_id = {
+            self.last_peer_id = (self.last_peer_id + 1) % i32::MAX;
+            if self.last_peer_id < 2 {
+                self.last_peer_id = 2;
+            }
+            self.last_peer_id
+        };
+        let endpoint = self.listener.endpoint.clone();
+        let accepted_peer_sender = self.accepted_peer_sender.clone();
+        IrohRuntime::spawn(async move {
+            let (_, connection) = IrohConnection::connect(endpoint, node_id).await?;
+            accepted_peer_sender.send((peer_id, connection)).await?;
+            Ok::<(), anyhow::Error>(())
+        });
+    }
 }
 
 #[godot_api]

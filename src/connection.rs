@@ -16,7 +16,7 @@ use tokio::{
 use crate::{ALPN, IrohRuntime, MAX_PACKET_SIZE};
 
 pub struct IrohListener {
-    endpoint: Endpoint,
+    pub(crate) endpoint: Endpoint,
     connection_receiver: Receiver<Connection>,
     closed: bool,
 }
