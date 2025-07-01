@@ -41,8 +41,6 @@ The addon is accessible on the Godot Asset Library [here](https://godotengine.or
 - Extract the archive in your Godot project folder.
 - That's it! You're all set!
 
-Here's an improved version of your documentation, with clearer instructions, better formatting, and improved grammar:
-
 ### Build It Yourself
 
 To build the library from source:
