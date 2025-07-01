@@ -41,6 +41,35 @@ The addon is accessible on the Godot Asset Library [here](https://godotengine.or
 - Extract the archive in your Godot project folder.
 - That's it! You're all set!
 
+### Build It Yourself
+
+To build the library from source:
+
+1. **Compile the project in release mode**
+   Open a terminal in the project directory and run:
+
+   ```bash
+   cargo build --release
+   ```
+
+2. **Locate the compiled library**
+   After building, the compiled library will be located in the `target/release/` directory.
+   The file extension will depend on your operating system:
+
+   * **Linux**: `.so`
+   * **Windows**: `.dll`
+   * **macOS**: `.dylib`
+
+3. **Copy and rename the library**
+
+   * Copy the compiled library to the `addons/godot_iroh/` directory.
+   * Rename it to match the name specified in the `addons/godot_iroh/godot_iroh.gdextension` file.
+
+4. **Use it in your Godot project**
+
+   * Copy the entire `addons/` folder into your Godot project.
+   * The extension should now be ready to use.
+
 ## Usage
 
 This plugin allows you to establish peer-to-peer multiplayer connections in Godot without relying on a centralized server, leveraging the power of [Iroh](https://www.iroh.computer/).
