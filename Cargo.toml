@@ -7,7 +7,7 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
-tokio = { version = "1.45.1", features = ["rt-multi-thread"] }
+tokio = { version = "1.46.1", features = ["rt-multi-thread"] }
 iroh = { version = "0.35.0", default-features = false }
 godot = "0.3.1"
 anyhow = "1.0.98"
