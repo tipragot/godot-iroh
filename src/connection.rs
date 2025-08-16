@@ -3,7 +3,7 @@ use std::collections::{HashMap, hash_map::Entry};
 use anyhow::{Context, bail};
 use base64::prelude::*;
 use bytes::{Buf, Bytes};
-use godot::classes::multiplayer_peer::TransferMode;
+use godot::{classes::multiplayer_peer::TransferMode, global::godot_error, prelude::godot_warn};
 use iroh::{
     Endpoint, NodeId,
     endpoint::{Connection, VarInt},
@@ -13,7 +13,7 @@ use tokio::{
     sync::mpsc::{Receiver, UnboundedSender, channel, error::TryRecvError, unbounded_channel},
 };
 
-use crate::{ALPN, IrohRuntime, MAX_PACKET_SIZE};
+use crate::{ALPN, IrohRuntime};
 
 pub struct IrohListener {
     pub(crate) endpoint: Endpoint,
@@ -106,6 +106,15 @@ impl IrohConnection {
                 } else {
                     buffer.extend_from_slice(&0u32.to_be_bytes());
                 }
+                let max_datagram_size = connection_clone.max_datagram_size().unwrap_or(1024);
+                if buffer.len() > max_datagram_size {
+                    godot_warn!(
+                        "Unreliable packet on channel {} (size: {}) exceeds {} bytes and will likely be discarded by the network",
+                        channel,
+                        buffer.len(),
+                        max_datagram_size,
+                    );
+                }
                 if connection_clone.send_datagram(buffer.into()).is_err() {
                     break;
                 }
@@ -157,7 +166,6 @@ impl IrohConnection {
                     let channel = stream.read_i32().await?;
                     loop {
                         let packet_len = stream.read_u16().await?;
-                        anyhow::ensure!(packet_len as usize <= MAX_PACKET_SIZE);
                         let mut packet = vec![0u8; packet_len as usize];
                         stream.read_exact(&mut packet).await?;
                         if packet_sender
@@ -219,9 +227,19 @@ impl IrohConnection {
                         let mut stream = connection.open_uni().await?;
                         stream.write_i32(channel).await?;
                         while let Some(packet) = receiver.recv().await {
-                            stream.write_u16(packet.len().try_into()?).await?;
-                            stream.write_all(&packet).await?;
+                            if packet.len() > u16::MAX as usize {
+                                godot_error!(
+                                    "Reliable packet on channel {} (size: {}) exceeds the maximum allowed size of {} bytes and cannot be sent",
+                                    channel,
+                                    packet.len(),
+                                    u16::MAX,
+                                );
+                            } else {
+                                stream.write_u16(packet.len().try_into()?).await?;
+                                stream.write_all(&packet).await?;
+                            }
                         }
+
                         Ok::<(), anyhow::Error>(())
                     });
                     entry.insert(sender)
