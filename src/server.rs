@@ -80,6 +80,27 @@ impl IrohServer {
             Ok::<(), anyhow::Error>(())
         });
     }
+
+    /// Returns a dictionary of all peers currently connected to the server.
+    ///
+    /// The dictionary maps each peer's identifier to its connection string.
+    #[func]
+    fn connected_peers(&self) -> Dictionary {
+        self.peers
+            .iter()
+            .map(|(id, connection)| (*id, GString::from(connection.connection_string())))
+            .collect()
+    }
+
+    /// Given a `peer_id`, this function looks up the corresponding peer and returns
+    /// its connection string.
+    #[func]
+    fn peer_connection_string(&self, peer_id: i32) -> GString {
+        self.peers
+            .get(&peer_id)
+            .map(|connection| GString::from(connection.connection_string()))
+            .unwrap_or_else(GString::new)
+    }
 }
 
 #[godot_api]

@@ -258,6 +258,12 @@ impl IrohConnection {
     pub fn receive_packet(&mut self) -> Result<(i32, TransferMode, Bytes), TryRecvError> {
         self.packet_receiver.try_recv()
     }
+
+    pub fn connection_string(&self) -> String {
+        // If the connection is made the node id should be valid
+        let node_id = self.connection.remote_node_id().unwrap();
+        BASE64_URL_SAFE_NO_PAD.encode(node_id.as_bytes())
+    }
 }
 
 impl Drop for IrohConnection {
