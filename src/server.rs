@@ -90,7 +90,7 @@ impl IMultiplayerPeerExtension for IrohServer {
         }
 
         // Receive packets from peers
-        let mut disconected_peers = Vec::new();
+        let mut disconnected_peers = Vec::new();
         for (peer_id, connection) in &mut self.peers {
             loop {
                 match connection.receive_packet() {
@@ -98,7 +98,7 @@ impl IMultiplayerPeerExtension for IrohServer {
                         .received_packets
                         .push_back((*peer_id, channel, mode, packet)),
                     Err(TryRecvError::Disconnected) => {
-                        disconected_peers.push(*peer_id);
+                        disconnected_peers.push(*peer_id);
                         break;
                     }
                     Err(TryRecvError::Empty) => break,
@@ -107,7 +107,7 @@ impl IMultiplayerPeerExtension for IrohServer {
         }
 
         // Remove disconnected peers
-        for peer_id in disconected_peers {
+        for peer_id in disconnected_peers {
             self.peers.remove(&peer_id);
             self.base_mut()
                 .emit_signal("peer_disconnected", &[peer_id.to_variant()]);
