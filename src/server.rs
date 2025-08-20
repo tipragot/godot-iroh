@@ -8,8 +8,8 @@ use godot::prelude::*;
 use tokio::sync::mpsc::error::TryRecvError;
 use tokio::sync::mpsc::{Receiver, Sender, channel};
 
+use crate::IrohRuntime;
 use crate::connection::{IrohConnection, IrohListener};
-use crate::{IrohRuntime, MAX_PACKET_SIZE};
 
 #[derive(GodotClass)]
 #[class(tool, no_init, base=MultiplayerPeerExtension)]
@@ -160,7 +160,11 @@ impl IMultiplayerPeerExtension for IrohServer {
     }
 
     fn get_max_packet_size(&self) -> i32 {
-        MAX_PACKET_SIZE as i32
+        if self.transfer_mode == TransferMode::RELIABLE {
+            u16::MAX as i32
+        } else {
+            1024
+        }
     }
 
     fn get_available_packet_count(&self) -> i32 {

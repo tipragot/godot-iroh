@@ -11,7 +11,7 @@ use tokio::sync::mpsc::error::TryRecvError;
 use tokio::task::JoinHandle;
 
 use crate::connection::IrohConnection;
-use crate::{ALPN, IrohRuntime, MAX_PACKET_SIZE};
+use crate::{ALPN, IrohRuntime};
 
 enum ClientStatus {
     Connecting(JoinHandle<anyhow::Result<(Endpoint, i32, IrohConnection)>>),
@@ -168,7 +168,11 @@ impl IMultiplayerPeerExtension for IrohClient {
     }
 
     fn get_max_packet_size(&self) -> i32 {
-        MAX_PACKET_SIZE as i32
+        if self.transfer_mode == TransferMode::RELIABLE {
+            u16::MAX as i32
+        } else {
+            1024
+        }
     }
 
     fn get_available_packet_count(&self) -> i32 {

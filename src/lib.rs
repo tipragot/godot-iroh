@@ -7,7 +7,6 @@ use tokio::{
 };
 
 const ALPN: &[u8] = b"godot-iroh/0.1";
-const MAX_PACKET_SIZE: usize = 1024;
 
 mod client;
 mod connection;
