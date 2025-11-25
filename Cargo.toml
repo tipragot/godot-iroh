@@ -10,6 +10,6 @@ crate-type = ["cdylib"]
 tokio = { version = "1.48.0", features = ["rt-multi-thread"] }
 iroh = { version = "0.91.2", default-features = false }
 godot = "0.3.5"
-anyhow = "1.0.99"
+anyhow = "1.0.100"
 bytes = "1.11.0"
 base64 = "0.22.1"
