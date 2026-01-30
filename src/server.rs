@@ -1,5 +1,4 @@
 use std::collections::{HashMap, VecDeque};
-use std::ops::IndexMut;
 
 use bytes::Bytes;
 use godot::classes::multiplayer_peer::{ConnectionStatus, TransferMode};
@@ -100,7 +99,7 @@ impl IrohServer {
         self.peers
             .get(&peer_id)
             .map(|connection| connection.connection_string().to_godot_owned())
-            .unwrap_or_else(GString::new)
+            .unwrap_or_default()
     }
 }
 
