@@ -1,4 +1,5 @@
 use std::collections::{HashMap, VecDeque};
+use std::ops::IndexMut;
 
 use bytes::Bytes;
 use godot::classes::multiplayer_peer::{ConnectionStatus, TransferMode};
@@ -58,7 +59,7 @@ impl IrohServer {
     /// Returns the connection string that can be used to connect to this server.
     #[func]
     fn connection_string(&self) -> GString {
-        GString::from(self.listener.connection_string())
+        self.listener.connection_string().to_godot_owned()
     }
 
     /// Connect to an other server using the connection string.
@@ -85,10 +86,10 @@ impl IrohServer {
     ///
     /// The dictionary maps each peer's identifier to its connection string.
     #[func]
-    fn connected_peers(&self) -> Dictionary {
+    fn connected_peers(&self) -> VarDictionary {
         self.peers
             .iter()
-            .map(|(id, connection)| (*id, GString::from(connection.connection_string())))
+            .map(|(id, connection)| (*id, connection.connection_string().to_godot_owned()))
             .collect()
     }
 
@@ -98,7 +99,7 @@ impl IrohServer {
     fn peer_connection_string(&self, peer_id: i32) -> GString {
         self.peers
             .get(&peer_id)
-            .map(|connection| GString::from(connection.connection_string()))
+            .map(|connection| connection.connection_string().to_godot_owned())
             .unwrap_or_else(GString::new)
     }
 }
