@@ -5,7 +5,7 @@ use base64::prelude::*;
 use bytes::{Buf, Bytes};
 use godot::{classes::multiplayer_peer::TransferMode, global::godot_error, prelude::godot_warn};
 use iroh::{
-    Endpoint, NodeId,
+    Endpoint, EndpointId,
     endpoint::{Connection, VarInt},
 };
 use tokio::{
@@ -25,7 +25,6 @@ impl IrohListener {
     pub async fn new() -> anyhow::Result<Self> {
         let endpoint = Endpoint::builder()
             .alpns(vec![ALPN.to_vec()])
-            .discovery_n0()
             .bind()
             .await?;
 
@@ -62,7 +61,7 @@ impl IrohListener {
     }
 
     pub fn connection_string(&self) -> String {
-        BASE64_URL_SAFE_NO_PAD.encode(self.endpoint.node_id().as_bytes())
+        BASE64_URL_SAFE_NO_PAD.encode(self.endpoint.id().as_bytes())
     }
 
     pub fn receive_connection(&mut self) -> Result<Connection, TryRecvError> {
@@ -206,7 +205,8 @@ impl IrohConnection {
             Ok(bytes) => bytes,
             Err(_) => bail!("invalid connection string"),
         };
-        let node_id = NodeId::from_bytes(&node_id_bytes).context("invalid connection string")?;
+        let node_id =
+            EndpointId::from_bytes(&node_id_bytes).context("invalid connection string")?;
         let connection = endpoint.connect(node_id, ALPN).await?;
         let peer_id = connection.accept_uni().await?.read_i32().await?;
         Ok((peer_id, Self::new(connection).await))
@@ -261,7 +261,7 @@ impl IrohConnection {
 
     pub fn connection_string(&self) -> String {
         // If the connection is made the node id should be valid
-        let node_id = self.connection.remote_node_id().unwrap();
+        let node_id = self.connection.remote_id();
         BASE64_URL_SAFE_NO_PAD.encode(node_id.as_bytes())
     }
 }

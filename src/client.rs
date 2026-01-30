@@ -48,7 +48,6 @@ impl IrohClient {
         let handle = IrohRuntime::spawn(async {
             let endpoint = Endpoint::builder()
                 .alpns(vec![ALPN.to_vec()])
-                .discovery_n0()
                 .bind()
                 .await?;
             let (peer_id, connection) = IrohConnection::connect(endpoint.clone(), node_id).await?;
