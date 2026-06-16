@@ -25,7 +25,7 @@ impl INode for IrohManager {
             base,
             endpoint: None,
             router: None,
-            rpc_receiver: None, // Fixes E0063: Initialize the missing field
+            rpc_receiver: None,
         }
     }
 }
@@ -33,13 +33,14 @@ impl INode for IrohManager {
 #[godot_api]
 impl IrohManager {
     #[func]
-    fn start_network(&mut self, docs_path: NodePath, gossip_path: NodePath, blobs_path: NodePath) {
+    fn start_network(&mut self, docs_path: NodePath, gossip_path: NodePath, blobs_path: NodePath, cache_dir: GString) {
         let mut docs_node = self.base().get_node_as::<IrohDocs>(&docs_path);
         let mut gossip_node = self.base().get_node_as::<IrohGossip>(&gossip_path);
         let mut blobs_node = self.base().get_node_as::<IrohBlobs>(&blobs_path);
 
         let (connection_sender, connection_receiver) = channel(32);
         let rpc_handler = GodotRpcHandler { connection_sender };
+        let cache_dir_str = cache_dir.to_string();
 
         let (endpoint, router) = IrohRuntime::block_on(async {
             let endpoint = Endpoint::builder(presets::N0)
@@ -55,13 +56,14 @@ impl IrohManager {
 
             let gossip_engine = gossip_node.bind_mut().get_engine(endpoint.clone());
             let docs_engine = docs_node.bind_mut().get_engine(endpoint.clone(), gossip_engine.clone()).await;
-            let blobs_engine = blobs_node.bind_mut().get_engine(endpoint.clone());
+            
+            let blobs_engine = blobs_node.bind_mut().get_engine(endpoint.clone(), cache_dir_str).await;
 
             let router = iroh::protocol::Router::builder(endpoint.clone())
                 .accept(crate::ALPN, Arc::new(rpc_handler))
                 .accept(iroh_gossip::ALPN, Arc::new(gossip_engine))
                 .accept(iroh_docs::ALPN, Arc::new(docs_engine))
-                .accept(iroh_blobs::ALPN, Arc::new(blobs_engine))
+                .accept(iroh_blobs::ALPN, blobs_engine)
                 .spawn();
 
             (endpoint, router)
