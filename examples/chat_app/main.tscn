@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://bypi2idfwf68b"]
+[gd_scene format=3 uid="uid://bypi2idfwf68b"]
 
 [ext_resource type="Script" uid="uid://cunh7tw7tvqtp" path="res://connection_menu.gd" id="1_0xm2m"]
 [ext_resource type="Script" uid="uid://dxlhc8jc65lg1" path="res://chat_menu.gd" id="2_h2yge"]
 
-[node name="ChatExample" type="Control"]
+[node name="ChatExample" type="Control" unique_id=697440958]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ConnectionMenu" type="VBoxContainer" parent="."]
+[node name="ConnectionMenu" type="VBoxContainer" parent="." unique_id=97225616]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -27,28 +27,28 @@ grow_vertical = 2
 theme_override_constants/separation = 10
 script = ExtResource("1_0xm2m")
 
-[node name="JoinBox" type="HBoxContainer" parent="ConnectionMenu"]
+[node name="JoinBox" type="HBoxContainer" parent="ConnectionMenu" unique_id=8468182]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="ConnectionString" type="LineEdit" parent="ConnectionMenu/JoinBox"]
+[node name="ConnectionString" type="LineEdit" parent="ConnectionMenu/JoinBox" unique_id=2044322720]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Connection String"
 
-[node name="JoinRoom" type="Button" parent="ConnectionMenu/JoinBox"]
+[node name="JoinRoom" type="Button" parent="ConnectionMenu/JoinBox" unique_id=239532492]
 layout_mode = 2
 text = "Join Room"
 
-[node name="CreateRoom" type="Button" parent="ConnectionMenu"]
+[node name="CreateRoom" type="Button" parent="ConnectionMenu" unique_id=1285006741]
 layout_mode = 2
 text = "Create Room"
 
-[node name="ErrorLabel" type="Label" parent="ConnectionMenu"]
+[node name="ErrorLabel" type="Label" parent="ConnectionMenu" unique_id=332371865]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0, 0, 1)
 
-[node name="ChatMenu" type="MarginContainer" parent="."]
+[node name="ChatMenu" type="MarginContainer" parent="." unique_id=115685001]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -62,20 +62,20 @@ theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 script = ExtResource("2_h2yge")
 
-[node name="MessageInterface" type="VBoxContainer" parent="ChatMenu"]
+[node name="MessageInterface" type="VBoxContainer" parent="ChatMenu" unique_id=607159825]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="ServerInterface" type="HBoxContainer" parent="ChatMenu/MessageInterface"]
+[node name="ServerInterface" type="HBoxContainer" parent="ChatMenu/MessageInterface" unique_id=1563395351]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="InfoLabel" type="Label" parent="ChatMenu/MessageInterface/ServerInterface"]
+[node name="InfoLabel" type="Label" parent="ChatMenu/MessageInterface/ServerInterface" unique_id=638968182]
 layout_mode = 2
 text = "Connection String :"
 
-[node name="ConnectionString" type="RichTextLabel" parent="ChatMenu/MessageInterface/ServerInterface"]
+[node name="ConnectionString" type="RichTextLabel" parent="ChatMenu/MessageInterface/ServerInterface" unique_id=355724882]
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 2
@@ -84,46 +84,46 @@ fit_content = true
 vertical_alignment = 1
 selection_enabled = true
 
-[node name="CopyClipboard" type="Button" parent="ChatMenu/MessageInterface/ServerInterface"]
+[node name="CopyClipboard" type="Button" parent="ChatMenu/MessageInterface/ServerInterface" unique_id=1726815674]
 layout_mode = 2
 text = "Copy Connection String"
 
-[node name="StopServer" type="Button" parent="ChatMenu/MessageInterface/ServerInterface"]
+[node name="StopServer" type="Button" parent="ChatMenu/MessageInterface/ServerInterface" unique_id=589971041]
 layout_mode = 2
 text = "Stop Server"
 
-[node name="ClientInterface" type="HBoxContainer" parent="ChatMenu/MessageInterface"]
+[node name="ClientInterface" type="HBoxContainer" parent="ChatMenu/MessageInterface" unique_id=5618518]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 2
 
-[node name="Disconnect" type="Button" parent="ChatMenu/MessageInterface/ClientInterface"]
+[node name="Disconnect" type="Button" parent="ChatMenu/MessageInterface/ClientInterface" unique_id=1035997984]
 layout_mode = 2
 text = "Disconnect"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="ChatMenu/MessageInterface"]
+[node name="ScrollContainer" type="ScrollContainer" parent="ChatMenu/MessageInterface" unique_id=1936222863]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MessageList" type="VBoxContainer" parent="ChatMenu/MessageInterface/ScrollContainer"]
+[node name="MessageList" type="VBoxContainer" parent="ChatMenu/MessageInterface/ScrollContainer" unique_id=300415004]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="SendInterface" type="HBoxContainer" parent="ChatMenu/MessageInterface"]
+[node name="SendInterface" type="HBoxContainer" parent="ChatMenu/MessageInterface" unique_id=1280819819]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="MessageContent" type="LineEdit" parent="ChatMenu/MessageInterface/SendInterface"]
+[node name="MessageContent" type="LineEdit" parent="ChatMenu/MessageInterface/SendInterface" unique_id=1915693662]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Message Content"
 
-[node name="SendMessage" type="Button" parent="ChatMenu/MessageInterface/SendInterface"]
+[node name="SendMessage" type="Button" parent="ChatMenu/MessageInterface/SendInterface" unique_id=1406694672]
 layout_mode = 2
 text = "Send Message"
 
-[node name="MessageSpawner" type="MultiplayerSpawner" parent="ChatMenu"]
+[node name="MessageSpawner" type="MultiplayerSpawner" parent="ChatMenu" unique_id=550330929]
 _spawnable_scenes = PackedStringArray("uid://d2p5knjyhrsru")
 spawn_path = NodePath("../MessageInterface/ScrollContainer/MessageList")
 

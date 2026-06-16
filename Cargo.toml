@@ -8,8 +8,13 @@ crate-type = ["cdylib"]
 
 [dependencies]
 tokio = { version = "1.49.0", features = ["rt-multi-thread"] }
-iroh = { version = "0.96.0", default-features = false }
+iroh = { version = "1.0.0", default-features = false, features = ["default"] }
 godot = "0.4.5"
 anyhow = "1.0.100"
 bytes = "1.11.0"
 base64 = "0.22.1"
+iroh-docs = "0.101.0"
+iroh-gossip = "0.101.0"
+iroh-blobs = "0.103.0"
+futures-lite = "2.6.1"
+blake3 = "1.8.5"

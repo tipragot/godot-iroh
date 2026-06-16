@@ -11,6 +11,10 @@ const ALPN: &[u8] = b"godot-iroh/0.1";
 mod client;
 mod connection;
 mod server;
+mod blobs;
+mod docs;
+mod gossip;
+mod manager;
 
 struct MyExtension;
 
