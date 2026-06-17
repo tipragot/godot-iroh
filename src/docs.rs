@@ -130,15 +130,22 @@ impl IrohDocs {
                         iroh_docs::engine::LiveEvent::InsertLocal { entry, .. } |
                         iroh_docs::engine::LiveEvent::InsertRemote { entry, .. } => {
                             let key = String::from_utf8_lossy(entry.key()).to_string();
+                            let hash = entry.content_hash();
+                
+                            let tx_clone = tx.clone();
+                            let blobs_clone = blobs.clone();
                             
-                            match (*blobs).blobs().get_bytes(entry.content_hash()).await {
-                                Ok(bytes) => {
-                                    let _ = tx.send((key, bytes.to_vec())).await;
+                            tokio::spawn(async move {
+                                match (*blobs_clone).blobs().get_bytes(hash).await {
+                                    Ok(bytes) => {
+                                        godot_print!("[Iroh Docs] Blob fetched for key: {}", key);
+                                        let _ = tx_clone.send((key, bytes.to_vec())).await;
+                                    }
+                                    Err(e) => {
+                                        godot_print!("[Iroh Docs Error] Failed fetching blob for {}: {}", key, e);
+                                    }
                                 }
-                                Err(e) => {
-                                    godot_error!("Blob not ready/failed for key {}: {}", key, e);
-                                }
-                            }
+                            });
                         }
                         _ => {}
                     }
@@ -175,15 +182,22 @@ impl IrohDocs {
                         iroh_docs::engine::LiveEvent::InsertLocal { entry, .. } |
                         iroh_docs::engine::LiveEvent::InsertRemote { entry, .. } => {
                             let key = String::from_utf8_lossy(entry.key()).to_string();
+                            let hash = entry.content_hash();
+                
+                            let tx_clone = tx.clone();
+                            let blobs_clone = blobs.clone();
                             
-                            match (*blobs).blobs().get_bytes(entry.content_hash()).await {
-                                Ok(bytes) => {
-                                    let _ = tx.send((key, bytes.to_vec())).await;
+                            tokio::spawn(async move {
+                                match (*blobs_clone).blobs().get_bytes(hash).await {
+                                    Ok(bytes) => {
+                                        godot_print!("[Iroh Docs] Blob fetched for key: {}", key);
+                                        let _ = tx_clone.send((key, bytes.to_vec())).await;
+                                    }
+                                    Err(e) => {
+                                        godot_print!("[Iroh Docs Error] Failed fetching blob for {}: {}", key, e);
+                                    }
                                 }
-                                Err(e) => {
-                                    godot_error!("Blob not ready/failed for key {}: {}", key, e);
-                                }
-                            }
+                            });
                         }
                         _ => {}
                     }
@@ -204,10 +218,16 @@ impl IrohDocs {
 
         let k = key.to_string().into_bytes();
         let v = value.to_vec();
+        let key_str = key.to_string();
 
         IrohRuntime::spawn(async move {
-            let replica = docs.open(namespace).await.unwrap().unwrap();
-            replica.set_bytes(author, k, v).await.unwrap();
+            match docs.open(namespace).await.unwrap() {
+                Some(replica) => {
+                    replica.set_bytes(author, k, v).await.unwrap();
+                    godot_print!("[Iroh Docs] Wrote '{}' directly to local DB.", key_str);
+                }
+                None => godot_print!("[Iroh Docs Error] Could not open replica for write!"),
+            }
         });
     }
 

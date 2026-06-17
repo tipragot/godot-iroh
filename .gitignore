@@ -2,5 +2,9 @@
 /examples/chat_app/.godot/editor
 /examples/chat_app/.godot
 /examples/chat_app/addons
-/examples/chat_app/iroh_cache
-examples/chat_app/config.cfg
+
+*.cfg
+*.db
+*.redb
+/examples/chat_app/local_discovery
+/examples/chat_app/iroh_cache*
