@@ -100,7 +100,7 @@ impl IrohManager {
     }
 
     #[func]
-    fn generate_secret_key() -> PackedByteArray {
+    fn generate_secret_key(&self) -> PackedByteArray {
         let key = SecretKey::generate();
         PackedByteArray::from_iter(key.to_bytes())
     }

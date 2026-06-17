@@ -145,6 +145,8 @@ spawn_path = NodePath("../MessageInterface/ScrollContainer/MessageList")
 
 [node name="Lobby" parent="." unique_id=1492495912 instance=ExtResource("4_1bvp3")]
 layout_mode = 1
+anchors_preset = -1
+offset_top = 32.0
 
 [connection signal="tab_selected" from="TabBar" to="." method="_on_tab_bar_tab_selected"]
 [connection signal="server_started" from="ConnectionMenu" to="ChatMenu" method="_on_server_started"]

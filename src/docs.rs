@@ -35,6 +35,10 @@ impl INode for IrohDocs {
         }
     }
 
+    fn ready(&mut self) {   
+        self.base_mut().set_process(true);
+    }
+    
     fn process(&mut self, _delta: f64) {
         // Step 1: Safely drain the receiver into the reusable queue
         if let Some(receiver) = &mut self.event_receiver {
@@ -63,7 +67,6 @@ impl IrohDocs {
         let path = PathBuf::from(cache_dir).join("docs");
         tokio::fs::create_dir_all(&path).await.unwrap();
         
-        // FIX: (*blobs).clone() extracts the underlying Storage struct needed by Docs
         let engine = Docs::persistent(path).spawn(endpoint, (*blobs).clone(), gossip).await.unwrap();
         
         self.blobs_engine = Some(blobs);
@@ -116,23 +119,33 @@ impl IrohDocs {
             let replica = docs.create().await.unwrap();
            
             let ticket = replica.share(iroh_docs::api::protocol::ShareMode::Write, Default::default()).await.unwrap();
-
             let mut events = replica.subscribe().await.unwrap();
+            let replica_id = replica.id();
             
             tokio::spawn(async move {
+                let _keep_alive = replica; // PREVENTS RPC DISCONNECT
+
                 while let Some(Ok(event)) = events.next().await {
-                    if let iroh_docs::engine::LiveEvent::InsertRemote { entry, .. } = event {
-                        let key = String::from_utf8_lossy(entry.key()).to_string();
-                        
-                        // FIX: read_to_bytes is now get_bytes
-                        if let Ok(bytes) = (*blobs).blobs().get_bytes(entry.content_hash()).await {
-                            let _ = tx.send((key, bytes.to_vec())).await;
+                    match event {
+                        iroh_docs::engine::LiveEvent::InsertLocal { entry, .. } |
+                        iroh_docs::engine::LiveEvent::InsertRemote { entry, .. } => {
+                            let key = String::from_utf8_lossy(entry.key()).to_string();
+                            
+                            match (*blobs).blobs().get_bytes(entry.content_hash()).await {
+                                Ok(bytes) => {
+                                    let _ = tx.send((key, bytes.to_vec())).await;
+                                }
+                                Err(e) => {
+                                    godot_error!("Blob not ready/failed for key {}: {}", key, e);
+                                }
+                            }
                         }
+                        _ => {}
                     }
                 }
             });
             self.author = Some(author); 
-            self.namespace = Some(replica.id());
+            self.namespace = Some(replica_id);
             ticket.to_string()
         });
 
@@ -147,28 +160,40 @@ impl IrohDocs {
         let (tx, rx) = channel(100);
         self.event_receiver = Some(rx);
 
-        IrohRuntime::spawn(async move {
-            // 1. Parse the ticket string
+        let namespace_id = IrohRuntime::block_on(async move {
             let ticket = DocTicket::from_str(&ticket_string.to_string()).expect("Invalid ticket string");
-            
-            // 2. Import the document from the swarm
             let replica = docs.import(ticket.clone()).await.unwrap();
+            let replica_id = replica.id();
 
-            // 3. Listen for incoming remote changes and pipe to Godot
             let mut events = replica.subscribe().await.unwrap();
             
             tokio::spawn(async move {
+                let _keep_alive = replica; // PREVENTS RPC DISCONNECT
+                
                 while let Some(Ok(event)) = events.next().await {
-                    if let iroh_docs::engine::LiveEvent::InsertRemote { entry, .. } = event {
-                        let key = String::from_utf8_lossy(entry.key()).to_string();
-                        
-                        if let Ok(bytes) = (*blobs).blobs().get_bytes(entry.content_hash()).await {
-                            let _ = tx.send((key, bytes.to_vec())).await;
+                    match event {
+                        iroh_docs::engine::LiveEvent::InsertLocal { entry, .. } |
+                        iroh_docs::engine::LiveEvent::InsertRemote { entry, .. } => {
+                            let key = String::from_utf8_lossy(entry.key()).to_string();
+                            
+                            match (*blobs).blobs().get_bytes(entry.content_hash()).await {
+                                Ok(bytes) => {
+                                    let _ = tx.send((key, bytes.to_vec())).await;
+                                }
+                                Err(e) => {
+                                    godot_error!("Blob not ready/failed for key {}: {}", key, e);
+                                }
+                            }
                         }
+                        _ => {}
                     }
                 }
             });
+            
+            replica_id
         });
+
+        self.namespace = Some(namespace_id);
     }
     
     #[func]
