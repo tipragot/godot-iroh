@@ -1,7 +1,9 @@
 [gd_scene format=3 uid="uid://bypi2idfwf68b"]
 
 [ext_resource type="Script" uid="uid://cunh7tw7tvqtp" path="res://connection_menu.gd" id="1_0xm2m"]
+[ext_resource type="Script" uid="uid://ddqoovuq8cko1" path="res://main.gd" id="1_h2yge"]
 [ext_resource type="Script" uid="uid://dxlhc8jc65lg1" path="res://chat_menu.gd" id="2_h2yge"]
+[ext_resource type="PackedScene" uid="uid://cn135m52cjasf" path="res://lobby.tscn" id="4_1bvp3"]
 
 [node name="ChatExample" type="Control" unique_id=697440958]
 layout_mode = 3
@@ -10,8 +12,22 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_h2yge")
+
+[node name="TabBar" type="TabBar" parent="." unique_id=1499251498]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 42.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 24
+current_tab = 0
+tab_count = 2
+tab_0/title = "Lobby"
+tab_1/title = "Original"
 
 [node name="ConnectionMenu" type="VBoxContainer" parent="." unique_id=97225616]
+visible = false
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -127,6 +143,10 @@ text = "Send Message"
 _spawnable_scenes = PackedStringArray("uid://d2p5knjyhrsru")
 spawn_path = NodePath("../MessageInterface/ScrollContainer/MessageList")
 
+[node name="Lobby" parent="." unique_id=1492495912 instance=ExtResource("4_1bvp3")]
+layout_mode = 1
+
+[connection signal="tab_selected" from="TabBar" to="." method="_on_tab_bar_tab_selected"]
 [connection signal="server_started" from="ConnectionMenu" to="ChatMenu" method="_on_server_started"]
 [connection signal="pressed" from="ConnectionMenu/JoinBox/JoinRoom" to="ConnectionMenu" method="_on_join_room_pressed"]
 [connection signal="pressed" from="ConnectionMenu/CreateRoom" to="ConnectionMenu" method="_on_create_room_pressed"]

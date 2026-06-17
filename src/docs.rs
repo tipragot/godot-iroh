@@ -1,8 +1,12 @@
 use godot::prelude::*;
-use iroh_docs::{protocol::Docs, NamespaceId, AuthorId};
-use iroh_blobs::store::mem::MemStore;
+use iroh::Endpoint;
+use iroh_docs::{protocol::Docs, DocTicket, NamespaceId, AuthorId};
+use iroh_blobs::BlobsProtocol;
 use tokio::sync::mpsc::{channel, Receiver};
 use futures_lite::StreamExt;
+use std::path::PathBuf;
+use std::str::FromStr;
+
 use crate::IrohRuntime;
 
 #[derive(GodotClass)]
@@ -10,10 +14,11 @@ use crate::IrohRuntime;
 pub struct IrohDocs {
     base: Base<Node>,
     docs_engine: Option<Docs>,
-    store: Option<MemStore>,
+    blobs_engine: Option<BlobsProtocol>,
     author: Option<AuthorId>,
     namespace: Option<NamespaceId>,
     event_receiver: Option<Receiver<(String, Vec<u8>)>>,
+    process_queue: Vec<(String, Vec<u8>)>, 
 }
 
 #[godot_api]
@@ -22,25 +27,29 @@ impl INode for IrohDocs {
         Self {
             base,
             docs_engine: None,
-            store: None,
+            blobs_engine: None,
             author: None,
             namespace: None,
             event_receiver: None,
+            process_queue: Vec::new(),
         }
     }
 
     fn process(&mut self, _delta: f64) {
-        let mut events = Vec::new();
+        // Step 1: Safely drain the receiver into the reusable queue
         if let Some(receiver) = &mut self.event_receiver {
-            while let Ok((key, value)) = receiver.try_recv() {
-                events.push((key, value));
+            while let Ok(msg) = receiver.try_recv() {
+                self.process_queue.push(msg);
             }
         }
+
+        let events = std::mem::take(&mut self.process_queue);
+
+        // 2. Iterate over the local variable `events`, not `self`
         for (key, value) in events {
             let k = GString::from(key.as_str());
-            let value_string = String::from_utf8_lossy(&value).into_owned();
-            let v = GString::from(value_string.as_str());
-            self.base_mut().emit_signal("entry_synced", &[k.to_variant(), v.to_variant()]);
+            let bytes = PackedByteArray::from_iter(value);
+            self.base_mut().emit_signal("entry_synced", &[k.to_variant(), bytes.to_variant()]);
         }
     }
 }
@@ -50,56 +59,152 @@ impl IrohDocs {
     #[signal]
     fn entry_synced(key: GString, value: PackedByteArray);
 
-    pub async fn get_engine(&mut self, endpoint: iroh::Endpoint, gossip: iroh_gossip::net::Gossip) -> Docs {
-        let store = MemStore::default();
-        let engine = Docs::memory().spawn(endpoint, store.clone().into(), gossip).await.unwrap();
-        self.store = Some(store);
+    pub async fn get_engine(&mut self, endpoint: Endpoint, blobs: BlobsProtocol, gossip: iroh_gossip::net::Gossip, cache_dir: String) -> Docs {
+        let path = PathBuf::from(cache_dir).join("docs");
+        tokio::fs::create_dir_all(&path).await.unwrap();
+        
+        // FIX: (*blobs).clone() extracts the underlying Storage struct needed by Docs
+        let engine = Docs::persistent(path).spawn(endpoint, (*blobs).clone(), gossip).await.unwrap();
+        
+        self.blobs_engine = Some(blobs);
         self.docs_engine = Some(engine.clone());
         engine
     }
 
     #[func]
-    fn create_staging_replica(&mut self) {
-        let Some(docs) = self.docs_engine.clone() else { return; };
+    fn setup_author(&mut self, saved_author_str: GString) -> GString {
+        let docs = self.docs_engine.as_ref().expect("Docs engine uninitialized").clone();
         
-        IrohRuntime::block_on(async {
+        let author_string = IrohRuntime::block_on(async move {
+            if saved_author_str.is_empty() {
+                // First boot: create a new author in the persistent DB
+                let new_author = docs.author_create().await.unwrap();
+                new_author.to_string()
+            } else {
+                // Subsequent boots: verify the saved author exists in the DB
+                let parsed_author = AuthorId::from_str(&saved_author_str.to_string()).unwrap();
+                
+                // If the user wiped their cache but kept the config, recreate it
+                let authors = docs.author_list().await.unwrap().collect::<Vec<_>>().await;
+                let exists = authors.into_iter().filter_map(Result::ok).any(|a| a == parsed_author);
+                
+                if exists {
+                    parsed_author.to_string()
+                } else {
+                    let new_author = docs.author_create().await.unwrap();
+                    new_author.to_string()
+                }
+            }
+        });
+        
+        // Save it to memory for when we call set_entry()
+        self.author = Some(AuthorId::from_str(&author_string).unwrap());
+        
+        GString::from(author_string.to_string().as_str())
+    }
+
+    #[func]
+    fn create_document(&mut self) -> GString {
+        let docs = self.docs_engine.as_ref().expect("Docs engine uninitialized").clone();
+        let blobs = self.blobs_engine.as_ref().expect("Blobs engine uninitialized").clone();
+        
+        let (tx, rx) = channel(100);
+        self.event_receiver = Some(rx);
+
+        let ticket_str = IrohRuntime::block_on(async move {
             let author = docs.author_create().await.unwrap();
             let replica = docs.create().await.unwrap();
-            
-            self.author = Some(author);
-            self.namespace = Some(replica.id());
-            
-            let (tx, rx) = channel(100);
-            self.event_receiver = Some(rx);
+           
+            let ticket = replica.share(iroh_docs::api::protocol::ShareMode::Write, Default::default()).await.unwrap();
 
-            // Subscribe to remote changes
+            let mut events = replica.subscribe().await.unwrap();
+            
             tokio::spawn(async move {
-                let mut events = replica.subscribe().await.unwrap();
                 while let Some(Ok(event)) = events.next().await {
                     if let iroh_docs::engine::LiveEvent::InsertRemote { entry, .. } = event {
-                        let key = entry.key().to_vec();
-                        let _ = tx.send((String::from_utf8_lossy(&key).to_string(), vec![])).await;
+                        let key = String::from_utf8_lossy(entry.key()).to_string();
+                        
+                        // FIX: read_to_bytes is now get_bytes
+                        if let Ok(bytes) = (*blobs).blobs().get_bytes(entry.content_hash()).await {
+                            let _ = tx.send((key, bytes.to_vec())).await;
+                        }
+                    }
+                }
+            });
+            self.author = Some(author); 
+            self.namespace = Some(replica.id());
+            ticket.to_string()
+        });
+
+        GString::from(&ticket_str)
+    }
+
+    #[func]
+    fn join_document(&mut self, ticket_string: GString) {
+        let docs = self.docs_engine.as_ref().expect("Docs engine uninitialized").clone();
+        let blobs = self.blobs_engine.as_ref().expect("Blobs engine uninitialized").clone();
+        
+        let (tx, rx) = channel(100);
+        self.event_receiver = Some(rx);
+
+        IrohRuntime::spawn(async move {
+            // 1. Parse the ticket string
+            let ticket = DocTicket::from_str(&ticket_string.to_string()).expect("Invalid ticket string");
+            
+            // 2. Import the document from the swarm
+            let replica = docs.import(ticket.clone()).await.unwrap();
+
+            // 3. Listen for incoming remote changes and pipe to Godot
+            let mut events = replica.subscribe().await.unwrap();
+            
+            tokio::spawn(async move {
+                while let Some(Ok(event)) = events.next().await {
+                    if let iroh_docs::engine::LiveEvent::InsertRemote { entry, .. } = event {
+                        let key = String::from_utf8_lossy(entry.key()).to_string();
+                        
+                        if let Ok(bytes) = (*blobs).blobs().get_bytes(entry.content_hash()).await {
+                            let _ = tx.send((key, bytes.to_vec())).await;
+                        }
                     }
                 }
             });
         });
     }
-
+    
     #[func]
     fn set_entry(&self, key: GString, value: PackedByteArray) {
-        // 1. Extract and clone the variables out of `self` FIRST
-        let docs = self.docs_engine.as_ref().expect("Docs engine not initialized").clone();
-        let namespace = *self.namespace.as_ref().unwrap(); // Or however you safely copy the ID
+        let docs = self.docs_engine.as_ref().unwrap().clone();
+        let namespace = *self.namespace.as_ref().unwrap();
         let author = *self.author.as_ref().unwrap();
 
-        // Keep your existing k and v parsing here...
         let k = key.to_string().into_bytes();
         let v = value.to_vec();
 
-        // 2. Now spawn the static block
         IrohRuntime::spawn(async move {
             let replica = docs.open(namespace).await.unwrap().unwrap();
             replica.set_bytes(author, k, v).await.unwrap();
+        });
+    }
+
+    #[func]
+    fn set_entries_batched(&self, entries: VarDictionary) {
+        let docs = self.docs_engine.as_ref().unwrap().clone();
+        let namespace = *self.namespace.as_ref().unwrap();
+        let author = *self.author.as_ref().unwrap();
+
+        let mut batch = Vec::new();
+        for (key, value) in entries.iter_shared() {
+            let k = key.to_string().into_bytes();
+            let v = value.try_to::<PackedByteArray>().unwrap().to_vec();
+            batch.push((k, v));
+        }
+
+        IrohRuntime::spawn(async move {
+            if let Ok(Some(replica)) = docs.open(namespace).await {
+                for (k, v) in batch {
+                    let _ = replica.set_bytes(author, k, v).await;
+                }
+            }
         });
     }
 }

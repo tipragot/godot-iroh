@@ -1,0 +1,133 @@
+[gd_scene format=3 uid="uid://cn135m52cjasf"]
+
+[ext_resource type="Script" uid="uid://ccpuwky5rvukw" path="res://lobby.gd" id="1_xrgmn"]
+[ext_resource type="Script" uid="uid://chhmkkkvl24mj" path="res://config.gd" id="2_2wvic"]
+[ext_resource type="Script" uid="uid://cunh7tw7tvqtp" path="res://connection_menu.gd" id="3_2wvic"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1gg6n"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.19607843, 0.19607843, 0.19607843, 0.3764706)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="Lobby" type="MarginContainer" unique_id=1143172019]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+script = ExtResource("1_xrgmn")
+
+[node name="Config" type="Node" parent="." unique_id=1313497735]
+script = ExtResource("2_2wvic")
+
+[node name="IrohBlobs" type="IrohBlobs" parent="." unique_id=752905044]
+
+[node name="IrohGossip" type="IrohGossip" parent="." unique_id=2142056557]
+
+[node name="IrohDocs" type="IrohDocs" parent="." unique_id=1338803268]
+
+[node name="IrohManager" type="IrohManager" parent="." unique_id=559498356]
+
+[node name="MessageInterface" type="VBoxContainer" parent="." unique_id=1750428485]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ServerInterface" type="HBoxContainer" parent="MessageInterface" unique_id=2055041410]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="InfoLabel" type="Label" parent="MessageInterface/ServerInterface" unique_id=357986704]
+layout_mode = 2
+text = "Connection String :"
+
+[node name="ConnectionString" type="RichTextLabel" parent="MessageInterface/ServerInterface" unique_id=509266681]
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 2
+text = "Connection String"
+fit_content = true
+vertical_alignment = 1
+selection_enabled = true
+
+[node name="CopyClipboard" type="Button" parent="MessageInterface/ServerInterface" unique_id=101012226]
+layout_mode = 2
+text = "Copy Connection String"
+
+[node name="ClientInterface" type="HBoxContainer" parent="MessageInterface" unique_id=684315246]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 2
+
+[node name="Disconnect" type="Button" parent="MessageInterface/ClientInterface" unique_id=1386475633]
+layout_mode = 2
+text = "Disconnect"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MessageInterface" unique_id=1327601350]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MessageList" type="VBoxContainer" parent="MessageInterface/ScrollContainer" unique_id=134688716]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=670544446]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("StyleBoxFlat_1gg6n")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=135578096]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ConnectionMenu" type="VBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=174986600]
+layout_mode = 2
+theme_override_constants/separation = 10
+script = ExtResource("3_2wvic")
+
+[node name="JoinBox" type="HBoxContainer" parent="PanelContainer/VBoxContainer/ConnectionMenu" unique_id=1780442171]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ConnectionInput" type="LineEdit" parent="PanelContainer/VBoxContainer/ConnectionMenu/JoinBox" unique_id=1965643276]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Connection String"
+
+[node name="ErrorLabel" type="Label" parent="PanelContainer/VBoxContainer/ConnectionMenu" unique_id=381971493]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+
+[node name="CreateRoom" type="Button" parent="PanelContainer/VBoxContainer/ConnectionMenu" unique_id=1283303379]
+layout_mode = 2
+text = "Create Room"
+
+[node name="SendInterface" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=776972004]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MessageContent" type="LineEdit" parent="PanelContainer/VBoxContainer/SendInterface" unique_id=611932390]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Message Content"
+
+[node name="SendMessage" type="Button" parent="PanelContainer/VBoxContainer/SendInterface" unique_id=656903180]
+layout_mode = 2
+text = "Send Message"
+
+[connection signal="pressed" from="MessageInterface/ServerInterface/CopyClipboard" to="." method="_on_copy_clipboard_pressed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/ConnectionMenu/CreateRoom" to="." method="_on_create_room_pressed"]
+[connection signal="text_submitted" from="PanelContainer/VBoxContainer/SendInterface/MessageContent" to="." method="_on_message_content_text_submitted"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/SendInterface/SendMessage" to="." method="_on_send_message_pressed"]
