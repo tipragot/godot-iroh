@@ -63,7 +63,7 @@ impl IrohManager {
                 .accept(crate::ALPN, Arc::new(rpc_handler))
                 .accept(iroh_gossip::ALPN, Arc::new(gossip_engine))
                 .accept(iroh_docs::ALPN, Arc::new(docs_engine))
-                .accept(iroh_blobs::ALPN, blobs_engine)
+                .accept(iroh_blobs::ALPN, Arc::new(blobs_engine))
                 .spawn();
 
             (endpoint, router)
