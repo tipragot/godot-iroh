@@ -124,7 +124,7 @@ func _isolate_testing_environments() -> void:
 
 func host_room(roomId: String) -> void:
 	is_host = true
-	active_room_topic = "room_" + roomId
+	active_room_topic = roomId
 	iroh_gossip.join_topic(active_room_topic, PackedStringArray())
 	watchdog.start()
 
@@ -132,8 +132,7 @@ func join_room(target_topic: String) -> void:
 	is_host = false
 	active_room_topic = target_topic
 	
-	var host_node_id = target_topic.trim_prefix("room_")
-	var peers = PackedStringArray([host_node_id])
+	var peers = PackedStringArray([target_topic])
 	
 	iroh_gossip.join_topic(active_room_topic, peers)
 
