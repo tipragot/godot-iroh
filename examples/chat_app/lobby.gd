@@ -4,18 +4,19 @@ extends Control
 @onready var config: IrohConfig = $Config
 
 # Chat UI
-@onready var message_list: VBoxContainer = $MessageInterface/ScrollContainer/MessageList
-@onready var scroll_container: ScrollContainer = $MessageInterface/ScrollContainer
+@onready var message_list: VBoxContainer = $MessageInterface/HBoxContainer/ScrollContainer/MessageList
+@onready var scroll_container: ScrollContainer = $MessageInterface/HBoxContainer/ScrollContainer
 @onready var client_interface: HBoxContainer = $MessageInterface/ClientInterface
+@onready var friends_list: VBoxContainer = $MessageInterface/HBoxContainer/ScrollContainer2/FriendsList
 
 # Server Browser UI
 @onready var server_interface: HBoxContainer = $MessageInterface/ServerInterface
 @onready var connection_string: RichTextLabel = $MessageInterface/ServerInterface/ConnectionString
-@onready var connection_input: LineEdit = $PanelContainer/VBoxContainer/ConnectionMenu/JoinBox/ConnectionInput
 
-@onready var connection_menu: VBoxContainer = $PanelContainer/VBoxContainer/ConnectionMenu
-@onready var send_interface: HBoxContainer = $PanelContainer/VBoxContainer/SendInterface
-@onready var message_content: LineEdit = $PanelContainer/VBoxContainer/SendInterface/MessageContent
+@onready var connection_input: LineEdit = $MessageInterface/PanelContainer/VBoxContainer/ConnectionMenu/JoinBox/ConnectionInput
+@onready var connection_menu: VBoxContainer = $MessageInterface/PanelContainer/VBoxContainer/ConnectionMenu
+@onready var send_interface: HBoxContainer = $MessageInterface/PanelContainer/VBoxContainer/SendInterface
+@onready var message_content: LineEdit = $MessageInterface/PanelContainer/VBoxContainer/SendInterface/MessageContent
 
 @export var user_name: String = ""
 
@@ -32,8 +33,10 @@ func _ready() -> void:
 	config.server_discovered.connect(_on_server_discovered)
 	config.chat_received.connect(_on_chat_received)
 	config.game_started.connect(_on_game_started)
+	config.friend_confirmed.connect(_on_friend_confirmed)
 	
 	send_interface.visible = false
+	_populate_friends_list()
 	start()
 
 func start() -> void:
@@ -54,9 +57,8 @@ func _on_network_start_failed(error: String) -> void:
 	push_error("Iroh network failed to start: ", error)
 
 # ==========================================
-# SERVER BROWSER (GOSSIP)
+# SERVER / FRIEND BROWSER (GOSSIP)
 # ==========================================
-
 func _on_server_discovered(info: Dictionary) -> void:
 	print("[LOBBY] Gossip received server info: ", info)
 	
@@ -79,11 +81,11 @@ func _on_server_discovered(info: Dictionary) -> void:
 		
 		var lbl_host = Label.new()
 		lbl_host.name = "HostName"
-		lbl_host.text = "Host: " + info.host
+		lbl_host.text = "Host: " + info.host_name
 		
 		var btn_join = Button.new()
 		btn_join.text = "Join"
-		btn_join.pressed.connect(func(): _on_join_room(info.topic))
+		btn_join.pressed.connect(func(): _on_join_room(info.host_node))
 		
 		hbox.add_child(lbl_name)
 		hbox.add_child(lbl_host)
@@ -92,9 +94,39 @@ func _on_server_discovered(info: Dictionary) -> void:
 		message_list.add_child(hbox)
 		discovered_servers[info.topic] = hbox
 
+func _on_friend_confirmed(peer_id: String) -> void:
+	_add_friend_to_ui(peer_id)
+
+func _populate_friends_list() -> void:
+	for child in friends_list.get_children():
+		child.queue_free()
+		
+	var friends = config.get_phonebook()
+	for friend_id in friends:
+		_add_friend_to_ui(friend_id)
+		
+func _add_friend_to_ui(peer_id: String) -> void:
+	var hbox = HBoxContainer.new()
+	
+	var lbl = Label.new()
+	lbl.text = peer_id.substr(0, 12) + "..."
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	var btn_copy = Button.new()
+	btn_copy.text = "Copy"
+	btn_copy.pressed.connect(func(): DisplayServer.clipboard_set(peer_id))
+	
+	hbox.add_child(lbl)
+	hbox.add_child(btn_copy)
+	friends_list.add_child(hbox)
+	
 # ==========================================
 # MATCH CREATION & JOINING (GOSSIP LOBBY)
 # ==========================================
+
+func _on_join_node_pressed() -> void:
+	config.try_add_friend(connection_input.text)
+	
 func _on_join_room_pressed() -> void:
 	print(connection_input.text)
 	_on_join_room(connection_input.text)
@@ -181,10 +213,8 @@ func _on_game_started(ticket: String) -> void:
 # UTILITIES
 # ==========================================
 
-
 func _on_copy_clipboard_pressed() -> void:
-	if not active_room_topic.is_empty():
-		DisplayServer.clipboard_set(active_room_topic)
+	DisplayServer.clipboard_set(config.nodeId)
 
 func _clear_message_list() -> void:
 	discovered_servers.clear()

@@ -43,7 +43,6 @@ layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="ServerInterface" type="HBoxContainer" parent="MessageInterface" unique_id=2055041410]
-visible = false
 layout_mode = 2
 theme_override_constants/separation = 10
 
@@ -65,6 +64,7 @@ layout_mode = 2
 text = "Copy Connection String"
 
 [node name="ClientInterface" type="HBoxContainer" parent="MessageInterface" unique_id=684315246]
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 2
@@ -73,70 +73,84 @@ alignment = 2
 layout_mode = 2
 text = "Disconnect"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="MessageInterface" unique_id=1327601350]
+[node name="HBoxContainer" type="HBoxContainer" parent="MessageInterface" unique_id=983441443]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MessageList" type="VBoxContainer" parent="MessageInterface/ScrollContainer" unique_id=134688716]
+[node name="ScrollContainer" type="ScrollContainer" parent="MessageInterface/HBoxContainer" unique_id=1327601350]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MessageList" type="VBoxContainer" parent="MessageInterface/HBoxContainer/ScrollContainer" unique_id=134688716]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="PanelContainer" type="PanelContainer" parent="." unique_id=670544446]
+[node name="ScrollContainer2" type="ScrollContainer" parent="MessageInterface/HBoxContainer" unique_id=219321468]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="FriendsList" type="VBoxContainer" parent="MessageInterface/HBoxContainer/ScrollContainer2" unique_id=1365009085]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PanelContainer" type="PanelContainer" parent="MessageInterface" unique_id=670544446]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 size_flags_vertical = 8
 theme_override_styles/panel = SubResource("StyleBoxFlat_1gg6n")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=135578096]
+[node name="VBoxContainer" type="VBoxContainer" parent="MessageInterface/PanelContainer" unique_id=135578096]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ConnectionMenu" type="VBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=174986600]
+[node name="ConnectionMenu" type="VBoxContainer" parent="MessageInterface/PanelContainer/VBoxContainer" unique_id=174986600]
 layout_mode = 2
 theme_override_constants/separation = 10
 script = ExtResource("3_2wvic")
 
-[node name="JoinBox" type="HBoxContainer" parent="PanelContainer/VBoxContainer/ConnectionMenu" unique_id=1780442171]
+[node name="JoinBox" type="HBoxContainer" parent="MessageInterface/PanelContainer/VBoxContainer/ConnectionMenu" unique_id=1780442171]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="ConnectionInput" type="LineEdit" parent="PanelContainer/VBoxContainer/ConnectionMenu/JoinBox" unique_id=1965643276]
+[node name="ConnectionInput" type="LineEdit" parent="MessageInterface/PanelContainer/VBoxContainer/ConnectionMenu/JoinBox" unique_id=1965643276]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Connection String"
 
-[node name="ErrorLabel" type="Label" parent="PanelContainer/VBoxContainer/ConnectionMenu" unique_id=381971493]
+[node name="ErrorLabel" type="Label" parent="MessageInterface/PanelContainer/VBoxContainer/ConnectionMenu" unique_id=381971493]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0, 0, 1)
 
-[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer/ConnectionMenu" unique_id=1463049856]
+[node name="HBoxContainer" type="HBoxContainer" parent="MessageInterface/PanelContainer/VBoxContainer/ConnectionMenu" unique_id=1463049856]
 layout_mode = 2
 
-[node name="CreateRoom" type="Button" parent="PanelContainer/VBoxContainer/ConnectionMenu/HBoxContainer" unique_id=1283303379]
+[node name="CreateRoom" type="Button" parent="MessageInterface/PanelContainer/VBoxContainer/ConnectionMenu/HBoxContainer" unique_id=1283303379]
 layout_mode = 2
 text = "Create Room"
 
-[node name="JoinRoom" type="Button" parent="PanelContainer/VBoxContainer/ConnectionMenu/HBoxContainer" unique_id=588342598]
+[node name="JoinNode" type="Button" parent="MessageInterface/PanelContainer/VBoxContainer/ConnectionMenu/HBoxContainer" unique_id=588342598]
 layout_mode = 2
-text = "Join Room"
+text = "Register node"
 
-[node name="SendInterface" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=776972004]
+[node name="SendInterface" type="HBoxContainer" parent="MessageInterface/PanelContainer/VBoxContainer" unique_id=776972004]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="MessageContent" type="LineEdit" parent="PanelContainer/VBoxContainer/SendInterface" unique_id=611932390]
+[node name="MessageContent" type="LineEdit" parent="MessageInterface/PanelContainer/VBoxContainer/SendInterface" unique_id=611932390]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Message Content"
 
-[node name="SendMessage" type="Button" parent="PanelContainer/VBoxContainer/SendInterface" unique_id=656903180]
+[node name="SendMessage" type="Button" parent="MessageInterface/PanelContainer/VBoxContainer/SendInterface" unique_id=656903180]
 layout_mode = 2
 text = "Send Message"
 
 [connection signal="pressed" from="MessageInterface/ServerInterface/CopyClipboard" to="." method="_on_copy_clipboard_pressed"]
 [connection signal="pressed" from="MessageInterface/ClientInterface/Disconnect" to="." method="_on_disconnect_pressed"]
-[connection signal="pressed" from="PanelContainer/VBoxContainer/ConnectionMenu/HBoxContainer/CreateRoom" to="." method="_on_create_room_pressed"]
-[connection signal="pressed" from="PanelContainer/VBoxContainer/ConnectionMenu/HBoxContainer/JoinRoom" to="." method="_on_join_room_pressed"]
-[connection signal="text_submitted" from="PanelContainer/VBoxContainer/SendInterface/MessageContent" to="." method="_on_message_content_text_submitted"]
-[connection signal="pressed" from="PanelContainer/VBoxContainer/SendInterface/SendMessage" to="." method="_on_send_message_pressed"]
+[connection signal="pressed" from="MessageInterface/PanelContainer/VBoxContainer/ConnectionMenu/HBoxContainer/CreateRoom" to="." method="_on_create_room_pressed"]
+[connection signal="pressed" from="MessageInterface/PanelContainer/VBoxContainer/ConnectionMenu/HBoxContainer/JoinNode" to="." method="_on_join_node_pressed"]
+[connection signal="text_submitted" from="MessageInterface/PanelContainer/VBoxContainer/SendInterface/MessageContent" to="." method="_on_message_content_text_submitted"]
+[connection signal="pressed" from="MessageInterface/PanelContainer/VBoxContainer/SendInterface/SendMessage" to="." method="_on_send_message_pressed"]

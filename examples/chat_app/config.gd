@@ -1,6 +1,11 @@
 class_name IrohConfig
 extends Node
 
+signal server_discovered(info: Dictionary)
+signal chat_received(author: String, text: String)
+signal game_started(ticket: String)
+signal friend_confirmed(peer_id: String)
+
 @onready var iroh_gossip: IrohGossip = $"../IrohGossip"
 @onready var iroh_docs: IrohDocs = $"../IrohDocs"
 @onready var iroh_blobs: IrohBlobs = $"../IrohBlobs"
@@ -17,20 +22,18 @@ extends Node
 const CONFIG_SECTION_IDENTITY = "Identity"
 const CONFIG_KEY_SECRET = "secret_key"
 const CONFIG_KEY_AUTHOR = "AuthorId"
-
-var _config := ConfigFile.new()
+const CONFIG_SECTION_FRIENDS = "Friends"
 
 var nodeId: String = ""
 var authorId: String = ""
+var pending_friends: Dictionary = {} # Maps { node_id : full_wan_addr }
 
 # Lobby State
 var is_host: bool = false
 var active_room_topic: String = ""
 var watchdog: Timer
 
-signal server_discovered(info: Dictionary)
-signal chat_received(author: String, text: String)
-signal game_started(ticket: String)
+var _config := ConfigFile.new()
 
 func _ready() -> void:
 	iroh_manager.network_started.connect(_on_network_started)
@@ -79,13 +82,14 @@ func _on_network_started(id: String) -> void:
 		_config.set_value(CONFIG_SECTION_IDENTITY, CONFIG_KEY_AUTHOR, authorId)
 		_config.save_encrypted_pass(config_path, encryption_password)
 	
-	_mesh_and_join_global()
+	_mesh_and_join_global(get_phonebook())
 
-func _mesh_and_join_global(manual_bootstrap: String = "") -> void:
-	# TODO manual_bootstrap: load cached friends?
+func _mesh_and_join_global(friends: PackedStringArray) -> void:
 	var bootstrap_peers = PackedStringArray()
-	if not manual_bootstrap.is_empty():
-		bootstrap_peers.append(manual_bootstrap)
+	for addr in friends:
+		var peer_node_id = iroh_manager.add_peer_addr(addr)
+		if not peer_node_id.is_empty():
+			bootstrap_peers.append(peer_node_id)
 		
 	if OS.has_feature("editor"):
 		var dir_path = "local_discovery"
@@ -119,8 +123,38 @@ func _isolate_testing_environments() -> void:
 		cache_path = "iroh_cache_" + pid
 
 # ==========================================
+# PHONEBOOK
+# ==========================================
+func get_phonebook() -> PackedStringArray:
+	return _config.get_value(CONFIG_SECTION_FRIENDS, "list", PackedStringArray()) as PackedStringArray
+
+func try_add_friend(peer_id: String) -> void:
+	if peer_id.is_empty() or peer_id == nodeId:
+		return
+		
+	pending_friends[peer_id] = true
+	iroh_gossip.join_topic(global_topic, PackedStringArray([peer_id]))
+	print("[PHONEBOOK] Dialing peer, waiting for Gossip heartbeat: ", peer_id)
+
+func _confirm_friend(peer_id: String) -> void:
+	if pending_friends.has(peer_id):
+		var friends = get_phonebook()
+		
+		if not friends.has(peer_id):
+			friends.append(peer_id)
+			_config.set_value(CONFIG_SECTION_FRIENDS, "list", friends)
+			_config.save_encrypted_pass(config_path, encryption_password)
+			print("[PHONEBOOK] Peer active! Saved to phonebook: ", peer_id)
+			
+			friend_confirmed.emit(peer_id)
+			
+		pending_friends.erase(peer_id)
+
+# ==========================================
 # LOBBY & GOSSIP ROUTING
 # ==========================================
+func connect_to_node(full_node_addr: String) -> void:
+	iroh_gossip.join_topic(global_topic, PackedStringArray([full_node_addr]))
 
 func host_room(roomId: String) -> void:
 	is_host = true
@@ -161,7 +195,8 @@ func _on_watchdog_tick() -> void:
 		var ad = {
 			"type": "server_ad",
 			"topic": active_room_topic,
-			"host": my_name
+			"host_name": my_name,
+			"host_node": nodeId
 		}
 		iroh_gossip.broadcast(global_topic, JSON.stringify(ad).to_utf8_buffer())
 
@@ -170,6 +205,7 @@ func _on_gossip_received(topic: String, message: PackedByteArray) -> void:
 	if not msg: return
 	
 	if topic == global_topic and msg.get("type") == "server_ad":
+		_confirm_friend(msg.host_node)
 		if msg.topic != active_room_topic:
 			server_discovered.emit(msg)
 			
