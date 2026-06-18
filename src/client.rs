@@ -6,11 +6,12 @@ use godot::classes::multiplayer_peer::{ConnectionStatus, TransferMode};
 use godot::classes::{IMultiplayerPeerExtension, MultiplayerPeerExtension};
 use godot::global::Error;
 use godot::prelude::*;
-use iroh::Endpoint;
+use iroh::{Endpoint, endpoint::presets};
 use tokio::sync::mpsc::error::TryRecvError;
 use tokio::task::JoinHandle;
 
 use crate::connection::IrohConnection;
+use crate::manager::IrohManager;
 use crate::{ALPN, IrohRuntime};
 
 enum ClientStatus {
@@ -45,14 +46,36 @@ impl IrohClient {
     #[func]
     fn connect(node_id: GString) -> Gd<Self> {
         let node_id = node_id.to_string();
-        let handle = IrohRuntime::spawn(async {
-            let endpoint = Endpoint::builder()
+        
+        let handle = IrohRuntime::spawn(async move {
+            let endpoint = Endpoint::builder(presets::N0)
                 .alpns(vec![ALPN.to_vec()])
                 .bind()
                 .await?;
             let (peer_id, connection) = IrohConnection::connect(endpoint.clone(), node_id).await?;
             Ok((endpoint, peer_id, connection))
         });
+
+        Gd::from_init_fn(|base| Self {
+            base,
+            status: ClientStatus::Connecting(handle),
+            received_packets: VecDeque::new(),
+            transfer_channel: 0,
+            transfer_mode: TransferMode::RELIABLE,
+        })
+    }
+
+    /// Managed connect: Uses the shared endpoint from IrohManager
+    #[func]
+    fn connect_managed(manager: Gd<IrohManager>, node_id: GString) -> Gd<Self> {
+        let endpoint = manager.bind().endpoint.clone().expect("Network not started! Call IrohManager.start_network first.");
+        let node_id = node_id.to_string();
+        
+        let handle = IrohRuntime::spawn(async move {
+            let (peer_id, connection) = IrohConnection::connect(endpoint.clone(), node_id).await?;
+            Ok((endpoint, peer_id, connection))
+        });
+
         Gd::from_init_fn(|base| Self {
             base,
             status: ClientStatus::Connecting(handle),

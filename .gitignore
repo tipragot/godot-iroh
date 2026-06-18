@@ -1,1 +1,10 @@
 /target
+/examples/chat_app/.godot/editor
+/examples/chat_app/.godot
+/examples/chat_app/addons
+
+*.cfg
+*.db
+*.redb
+/examples/chat_app/local_discovery
+/examples/chat_app/iroh_cache*

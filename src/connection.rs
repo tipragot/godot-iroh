@@ -6,24 +6,29 @@ use bytes::{Buf, Bytes};
 use godot::{classes::multiplayer_peer::TransferMode, global::godot_error, prelude::godot_warn};
 use iroh::{
     Endpoint, EndpointId,
-    endpoint::{Connection, VarInt},
+    endpoint::{Connection, VarInt, presets},
+    protocol::{ProtocolHandler, AcceptError},
 };
+
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     sync::mpsc::{Receiver, UnboundedSender, channel, error::TryRecvError, unbounded_channel},
+};
+use std::{
+    future::Future,
 };
 
 use crate::{ALPN, IrohRuntime};
 
 pub struct IrohListener {
     pub(crate) endpoint: Endpoint,
-    connection_receiver: Receiver<Connection>,
-    closed: bool,
+    pub connection_receiver: Receiver<Connection>,
+    pub closed: bool,
 }
 
 impl IrohListener {
     pub async fn new() -> anyhow::Result<Self> {
-        let endpoint = Endpoint::builder()
+        let endpoint = Endpoint::builder(presets::N0)
             .alpns(vec![ALPN.to_vec()])
             .bind()
             .await?;
@@ -269,5 +274,24 @@ impl IrohConnection {
 impl Drop for IrohConnection {
     fn drop(&mut self) {
         self.close();
+    }
+}
+
+// #[derive(Clone)]
+#[derive(Debug)]
+pub struct GodotRpcHandler {
+    pub connection_sender: tokio::sync::mpsc::Sender<Connection>,
+}
+
+impl ProtocolHandler for GodotRpcHandler {
+    fn accept(
+        &self,
+        conn: iroh::endpoint::Connection,
+    ) -> impl Future<Output = Result<(), AcceptError>> + std::marker::Send {
+        let sender = self.connection_sender.clone();
+        Box::pin(async move {
+            let _ = sender.send(conn).await;
+            Ok(())
+        })
     }
 }

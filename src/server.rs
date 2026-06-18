@@ -10,6 +10,7 @@ use tokio::sync::mpsc::{Receiver, Sender, channel};
 
 use crate::IrohRuntime;
 use crate::connection::{IrohConnection, IrohListener};
+use crate::manager::IrohManager;
 
 #[derive(GodotClass)]
 #[class(tool, no_init, base=MultiplayerPeerExtension)]
@@ -39,6 +40,37 @@ impl IrohServer {
             Ok(listener) => listener,
             Err(error) => panic!("failed to start listening: {error}"),
         };
+        let (accepted_peer_sender, accepted_peer_receiver) = channel(32);
+        Gd::from_init_fn(|base| Self {
+            base,
+            listener,
+            accepted_peer_sender,
+            accepted_peer_receiver,
+            refuse_new_connections: false,
+            peers: HashMap::new(),
+            last_peer_id: 1,
+            received_packets: VecDeque::new(),
+            transfer_channel: 0,
+            transfer_mode: TransferMode::RELIABLE,
+            target_peer_id: 0,
+        })
+    }
+
+     #[func]
+    fn start_managed(mut manager: Gd<IrohManager>) -> Gd<Self> {
+        let mut manager_bind = manager.bind_mut();
+        
+        let endpoint = manager_bind.endpoint.clone().expect("Network not started! Call IrohManager.start_network first.");
+        
+        // Take the receiver from the manager so the server can process incoming RPC connections
+        let connection_receiver = manager_bind.rpc_receiver.take().expect("Server already started or receiver taken.");
+
+        let listener = IrohListener {
+            endpoint,
+            connection_receiver,
+            closed: false,
+        };
+
         let (accepted_peer_sender, accepted_peer_receiver) = channel(32);
         Gd::from_init_fn(|base| Self {
             base,
