@@ -136,6 +136,16 @@ func join_room(target_topic: String, user_name: String) -> void:
 	
 	iroh_gossip.join_topic(active_room_topic, peers)
 
+func leave_room(target_topic: String) -> void:
+	iroh_gossip.leave_topic(target_topic)
+	if target_topic == active_room_topic:
+		active_room_topic = ""
+	var payload = {
+		"type": "disconnect",
+		"author": my_name
+	}
+	iroh_gossip.broadcast(target_topic, JSON.stringify(payload).to_utf8_buffer())
+	
 func send_chat(text: String) -> void:
 	if active_room_topic.is_empty(): return
 	

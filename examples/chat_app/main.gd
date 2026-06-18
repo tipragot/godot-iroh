@@ -5,9 +5,8 @@ extends Control
 @onready var chat_menu: MarginContainer = $ChatMenu
 @onready var lobby: Lobby = $Lobby
 
-# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	# for start lobby
+	# force start lobby
 	tab_bar.current_tab = 0
 
 func _on_tab_bar_tab_selected(tab: int) -> void:
@@ -19,5 +18,5 @@ func _on_tab_bar_tab_selected(tab: int) -> void:
 	else:
 		lobby.stop()
 		lobby.visible = false
-		chat_menu.visible = true
-		connection_menu.visible = false
+		chat_menu.visible = false
+		connection_menu.visible = true

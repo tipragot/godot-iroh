@@ -6,6 +6,7 @@ extends Control
 # Chat UI
 @onready var message_list: VBoxContainer = $MessageInterface/ScrollContainer/MessageList
 @onready var scroll_container: ScrollContainer = $MessageInterface/ScrollContainer
+@onready var client_interface: HBoxContainer = $MessageInterface/ClientInterface
 
 # Server Browser UI
 @onready var server_interface: HBoxContainer = $MessageInterface/ServerInterface
@@ -111,7 +112,7 @@ func _on_join_room(topic: String) -> void:
 	if user_name.is_empty(): user_name = "Guest"
 	
 	config.join_room(active_room_topic, user_name)
-	
+	client_interface.visible = true
 	_transition_to_chat()
 
 func _transition_to_chat() -> void:
@@ -156,8 +157,6 @@ func _on_chat_received(author: String, text: String) -> void:
 # ==========================================
 
 func _on_start_game_pressed() -> void:
-	# Note: Add a "Start Game" button to your UI and connect this.
-	# Only the host should be able to click it.
 	if config.is_host:
 		print("[LOBBY] Host starting game, creating Document...")
 		config.start_game_host()
@@ -165,17 +164,18 @@ func _on_start_game_pressed() -> void:
 func _on_game_started(ticket: String) -> void:
 	print("[LOBBY] Game started! Doc Ticket: ", ticket)
 	connection_string.text = "Game Running: " + ticket.substr(0, 8) + "..."
-	# Trigger level load or transition here
 
 # ==========================================
 # UTILITIES
 # ==========================================
 
 func _on_disconnect_pressed() -> void:
-	active_room_topic = ""
 	_clear_message_list()
+	config.leave_room(active_room_topic)
+	active_room_topic = ""
 	
 	# Reset UI to lobby state
+	client_interface.visible = false
 	scroll_container.visible = true 
 	server_interface.visible = false
 	connection_menu.visible = true

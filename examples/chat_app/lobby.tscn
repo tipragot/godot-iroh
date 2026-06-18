@@ -129,6 +129,7 @@ layout_mode = 2
 text = "Send Message"
 
 [connection signal="pressed" from="MessageInterface/ServerInterface/CopyClipboard" to="." method="_on_copy_clipboard_pressed"]
+[connection signal="pressed" from="MessageInterface/ClientInterface/Disconnect" to="." method="_on_disconnect_pressed"]
 [connection signal="pressed" from="PanelContainer/VBoxContainer/ConnectionMenu/CreateRoom" to="." method="_on_create_room_pressed"]
 [connection signal="text_submitted" from="PanelContainer/VBoxContainer/SendInterface/MessageContent" to="." method="_on_message_content_text_submitted"]
 [connection signal="pressed" from="PanelContainer/VBoxContainer/SendInterface/SendMessage" to="." method="_on_send_message_pressed"]
