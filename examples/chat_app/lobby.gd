@@ -17,6 +17,8 @@ extends Control
 @onready var send_interface: HBoxContainer = $PanelContainer/VBoxContainer/SendInterface
 @onready var message_content: LineEdit = $PanelContainer/VBoxContainer/SendInterface/MessageContent
 
+@export var user_name: String = ""
+
 # State tracking
 var active_room_topic: String = ""
 var discovered_servers: Dictionary = {}
@@ -93,25 +95,23 @@ func _on_server_discovered(info: Dictionary) -> void:
 # ==========================================
 # MATCH CREATION & JOINING (GOSSIP LOBBY)
 # ==========================================
-
+func _on_join_room_pressed() -> void:
+	print(connection_input.text)
+	_on_join_room(connection_input.text)
+	
 func _on_create_room_pressed() -> void:
 	if not active_room_topic.is_empty(): 
 		return 
-		
-	var user_name = connection_input.text
-	if user_name.is_empty(): user_name = "Host"
 	
-	config.host_room(user_name)
+	config.host_room(connection_input.text)
 	active_room_topic = config.active_room_topic
 	
 	_transition_to_chat()
 
 func _on_join_room(topic: String) -> void:
 	active_room_topic = topic
-	var user_name = connection_input.text
-	if user_name.is_empty(): user_name = "Guest"
 	
-	config.join_room(active_room_topic, user_name)
+	config.join_room(active_room_topic)
 	client_interface.visible = true
 	_transition_to_chat()
 
@@ -120,8 +120,20 @@ func _transition_to_chat() -> void:
 	connection_menu.visible = false
 	send_interface.visible = true
 	scroll_container.visible = true
-	connection_string.text = "Lobby Topic: " + active_room_topic.substr(0, 12) + "..."
+	connection_string.text += "\nLobby Topic: " + active_room_topic.substr(0, 12) + "..."
 
+func _on_disconnect_pressed() -> void:
+	_clear_message_list()
+	config.leave_room(active_room_topic)
+	active_room_topic = ""
+	
+	# Reset UI to lobby state
+	client_interface.visible = false
+	scroll_container.visible = true 
+	server_interface.visible = false
+	connection_menu.visible = true
+	send_interface.visible = false
+	connection_input.editable = true
 # ==========================================
 # CHAT SYSTEM (GOSSIP)
 # ==========================================
@@ -169,18 +181,6 @@ func _on_game_started(ticket: String) -> void:
 # UTILITIES
 # ==========================================
 
-func _on_disconnect_pressed() -> void:
-	_clear_message_list()
-	config.leave_room(active_room_topic)
-	active_room_topic = ""
-	
-	# Reset UI to lobby state
-	client_interface.visible = false
-	scroll_container.visible = true 
-	server_interface.visible = false
-	connection_menu.visible = true
-	send_interface.visible = false
-	connection_input.editable = true
 
 func _on_copy_clipboard_pressed() -> void:
 	if not active_room_topic.is_empty():

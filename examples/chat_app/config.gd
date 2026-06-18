@@ -12,6 +12,7 @@ extends Node
 @export var auto_start: bool = false
 
 @export var global_topic: String = "global_lobby"
+@export var my_name: String = "Player"
 
 const CONFIG_SECTION_IDENTITY = "Identity"
 const CONFIG_KEY_SECRET = "secret_key"
@@ -21,7 +22,6 @@ var _config := ConfigFile.new()
 
 var nodeId: String = ""
 var authorId: String = ""
-var my_name: String = "Player"
 
 # Lobby State
 var is_host: bool = false
@@ -81,9 +81,12 @@ func _on_network_started(id: String) -> void:
 	
 	_mesh_and_join_global()
 
-func _mesh_and_join_global() -> void:
+func _mesh_and_join_global(manual_bootstrap: String = "") -> void:
+	# TODO manual_bootstrap: load cached friends?
 	var bootstrap_peers = PackedStringArray()
-	
+	if not manual_bootstrap.is_empty():
+		bootstrap_peers.append(manual_bootstrap)
+		
 	if OS.has_feature("editor"):
 		var dir_path = "local_discovery"
 		DirAccess.make_dir_absolute(dir_path)
@@ -119,15 +122,13 @@ func _isolate_testing_environments() -> void:
 # LOBBY & GOSSIP ROUTING
 # ==========================================
 
-func host_room(user_name: String) -> void:
-	my_name = user_name
+func host_room(roomId: String) -> void:
 	is_host = true
-	active_room_topic = "room_" + nodeId
+	active_room_topic = "room_" + roomId
 	iroh_gossip.join_topic(active_room_topic, PackedStringArray())
 	watchdog.start()
 
-func join_room(target_topic: String, user_name: String) -> void:
-	my_name = user_name
+func join_room(target_topic: String) -> void:
 	is_host = false
 	active_room_topic = target_topic
 	

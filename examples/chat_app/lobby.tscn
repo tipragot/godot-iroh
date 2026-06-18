@@ -65,7 +65,6 @@ layout_mode = 2
 text = "Copy Connection String"
 
 [node name="ClientInterface" type="HBoxContainer" parent="MessageInterface" unique_id=684315246]
-visible = false
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 2
@@ -110,9 +109,16 @@ placeholder_text = "Connection String"
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0, 0, 1)
 
-[node name="CreateRoom" type="Button" parent="PanelContainer/VBoxContainer/ConnectionMenu" unique_id=1283303379]
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer/ConnectionMenu" unique_id=1463049856]
+layout_mode = 2
+
+[node name="CreateRoom" type="Button" parent="PanelContainer/VBoxContainer/ConnectionMenu/HBoxContainer" unique_id=1283303379]
 layout_mode = 2
 text = "Create Room"
+
+[node name="JoinRoom" type="Button" parent="PanelContainer/VBoxContainer/ConnectionMenu/HBoxContainer" unique_id=588342598]
+layout_mode = 2
+text = "Join Room"
 
 [node name="SendInterface" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=776972004]
 visible = false
@@ -130,6 +136,7 @@ text = "Send Message"
 
 [connection signal="pressed" from="MessageInterface/ServerInterface/CopyClipboard" to="." method="_on_copy_clipboard_pressed"]
 [connection signal="pressed" from="MessageInterface/ClientInterface/Disconnect" to="." method="_on_disconnect_pressed"]
-[connection signal="pressed" from="PanelContainer/VBoxContainer/ConnectionMenu/CreateRoom" to="." method="_on_create_room_pressed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/ConnectionMenu/HBoxContainer/CreateRoom" to="." method="_on_create_room_pressed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/ConnectionMenu/HBoxContainer/JoinRoom" to="." method="_on_join_room_pressed"]
 [connection signal="text_submitted" from="PanelContainer/VBoxContainer/SendInterface/MessageContent" to="." method="_on_message_content_text_submitted"]
 [connection signal="pressed" from="PanelContainer/VBoxContainer/SendInterface/SendMessage" to="." method="_on_send_message_pressed"]

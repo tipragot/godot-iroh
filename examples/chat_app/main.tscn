@@ -14,17 +14,27 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_h2yge")
 
-[node name="TabBar" type="TabBar" parent="." unique_id=1499251498]
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=810908629]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 42.0
 grow_horizontal = 2
+
+[node name="TabBar" type="TabBar" parent="HBoxContainer" unique_id=1499251498]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
 current_tab = 0
 tab_count = 2
 tab_0/title = "Lobby"
 tab_1/title = "Original"
+
+[node name="UserName" type="LineEdit" parent="HBoxContainer" unique_id=2023208398]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+text = "Bob"
+placeholder_text = "Username"
 
 [node name="ConnectionMenu" type="VBoxContainer" parent="." unique_id=97225616]
 visible = false
@@ -148,7 +158,8 @@ layout_mode = 1
 anchors_preset = -1
 offset_top = 32.0
 
-[connection signal="tab_selected" from="TabBar" to="." method="_on_tab_bar_tab_selected"]
+[connection signal="tab_selected" from="HBoxContainer/TabBar" to="." method="_on_tab_bar_tab_selected"]
+[connection signal="text_changed" from="HBoxContainer/UserName" to="." method="_on_user_name_text_changed"]
 [connection signal="server_started" from="ConnectionMenu" to="ChatMenu" method="_on_server_started"]
 [connection signal="pressed" from="ConnectionMenu/JoinBox/JoinRoom" to="ConnectionMenu" method="_on_join_room_pressed"]
 [connection signal="pressed" from="ConnectionMenu/CreateRoom" to="ConnectionMenu" method="_on_create_room_pressed"]
