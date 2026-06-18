@@ -69,7 +69,7 @@ func _on_server_discovered(info: Dictionary) -> void:
 	if discovered_servers.has(info.topic):
 		print("[LOBBY] Updating existing UI element for topic.")
 		var hbox = discovered_servers[info.topic]
-		hbox.get_node("HostName").text = "Host: " + info.host
+		hbox.get_node("HostName").text = "Host: " + info.host_node
 	else:
 		print("[LOBBY] Spawning new UI element for topic.")
 		var hbox = HBoxContainer.new()
@@ -77,7 +77,7 @@ func _on_server_discovered(info: Dictionary) -> void:
 		var lbl_name = Label.new()
 		lbl_name.name = "Name"
 		lbl_name.text = "Room: " + info.topic.substr(0, 12) + "..."
-		lbl_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		#lbl_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		
 		var lbl_host = Label.new()
 		lbl_host.name = "HostName"
@@ -85,7 +85,7 @@ func _on_server_discovered(info: Dictionary) -> void:
 		
 		var btn_join = Button.new()
 		btn_join.text = "Join"
-		btn_join.pressed.connect(func(): _on_join_room(info.host_node))
+		btn_join.pressed.connect(func(): _on_join_room(info.topic, info.host_node))
 		
 		hbox.add_child(lbl_name)
 		hbox.add_child(lbl_host)
@@ -123,13 +123,8 @@ func _add_friend_to_ui(peer_id: String) -> void:
 # ==========================================
 # MATCH CREATION & JOINING (GOSSIP LOBBY)
 # ==========================================
-
 func _on_join_node_pressed() -> void:
 	config.try_add_friend(connection_input.text)
-	
-func _on_join_room_pressed() -> void:
-	print(connection_input.text)
-	_on_join_room(connection_input.text)
 	
 func _on_create_room_pressed() -> void:
 	if not active_room_topic.is_empty(): 
@@ -140,10 +135,10 @@ func _on_create_room_pressed() -> void:
 	
 	_transition_to_chat()
 
-func _on_join_room(topic: String) -> void:
+func _on_join_room(topic: String, host_node: String) -> void:
 	active_room_topic = topic
 	
-	config.join_room(active_room_topic)
+	config.join_room(topic, host_node)
 	client_interface.visible = true
 	_transition_to_chat()
 

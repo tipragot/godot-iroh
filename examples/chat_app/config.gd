@@ -162,11 +162,11 @@ func host_room(roomId: String) -> void:
 	iroh_gossip.join_topic(active_room_topic, PackedStringArray())
 	watchdog.start()
 
-func join_room(target_topic: String) -> void:
+func join_room(target_topic: String, host_node_id: String) -> void:
 	is_host = false
 	active_room_topic = target_topic
 	
-	var peers = PackedStringArray([target_topic])
+	var peers = PackedStringArray([host_node_id])
 	
 	iroh_gossip.join_topic(active_room_topic, peers)
 
@@ -198,6 +198,7 @@ func _on_watchdog_tick() -> void:
 			"host_name": my_name,
 			"host_node": nodeId
 		}
+		print("WATCHDOG ", ad)
 		iroh_gossip.broadcast(global_topic, JSON.stringify(ad).to_utf8_buffer())
 
 func _on_gossip_received(topic: String, message: PackedByteArray) -> void:

@@ -86,8 +86,11 @@ size_flags_vertical = 3
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="VSeparator" type="VSeparator" parent="MessageInterface/HBoxContainer" unique_id=1286666821]
+layout_mode = 2
+
 [node name="ScrollContainer2" type="ScrollContainer" parent="MessageInterface/HBoxContainer" unique_id=219321468]
-custom_minimum_size = Vector2(150, 0)
+custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_vertical = 3
 
