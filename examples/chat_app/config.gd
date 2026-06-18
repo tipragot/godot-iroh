@@ -26,7 +26,7 @@ const CONFIG_SECTION_FRIENDS = "Friends"
 
 var nodeId: String = ""
 var authorId: String = ""
-var pending_friends: Dictionary = {} # Maps { node_id : full_wan_addr }
+var dialing_friends: PackedStringArray = PackedStringArray()
 
 # Lobby State
 var is_host: bool = false
@@ -83,14 +83,8 @@ func _on_network_started(id: String) -> void:
 		_config.save_encrypted_pass(config_path, encryption_password)
 	
 	_mesh_and_join_global(get_phonebook())
-
-func _mesh_and_join_global(friends: PackedStringArray) -> void:
-	var bootstrap_peers = PackedStringArray()
-	for addr in friends:
-		var peer_node_id = iroh_manager.add_peer_addr(addr)
-		if not peer_node_id.is_empty():
-			bootstrap_peers.append(peer_node_id)
-		
+	
+func _mesh_and_join_global(bootstrap_peers: PackedStringArray) -> void:
 	if OS.has_feature("editor"):
 		var dir_path = "local_discovery"
 		DirAccess.make_dir_absolute(dir_path)
@@ -128,27 +122,36 @@ func _isolate_testing_environments() -> void:
 func get_phonebook() -> PackedStringArray:
 	return _config.get_value(CONFIG_SECTION_FRIENDS, "list", PackedStringArray()) as PackedStringArray
 
-func try_add_friend(peer_id: String) -> void:
-	if peer_id.is_empty() or peer_id == nodeId:
+func try_add_friend(peer_node_id: String) -> void:
+	if peer_node_id.is_empty() or peer_node_id == nodeId: 
 		return
+	
+	if not dialing_friends.has(peer_node_id):
+		dialing_friends.append(peer_node_id)
 		
-	pending_friends[peer_id] = true
-	iroh_gossip.join_topic(global_topic, PackedStringArray([peer_id]))
-	print("[PHONEBOOK] Dialing peer, waiting for Gossip heartbeat: ", peer_id)
+		# Force Rust to tear down and rebuild the mesh with the new peer
+		iroh_gossip.leave_topic(global_topic)
+		await get_tree().process_frame
+		
+		var bootstrap = PackedStringArray()
+		bootstrap.append_array(get_phonebook())
+		bootstrap.append_array(dialing_friends)
+		
+		# Join with the newly combined list to trigger the WAN dial
+		iroh_gossip.join_topic(global_topic, bootstrap)
+		#if watchdog.is_stopped(): watchdog.start()
 
-func _confirm_friend(peer_id: String) -> void:
-	if pending_friends.has(peer_id):
-		var friends = get_phonebook()
+func _confirm_friend(peer_node_id: String) -> void:
+	var idx = dialing_friends.find(peer_node_id)
+	if idx != -1:
+		dialing_friends.remove_at(idx)
 		
-		if not friends.has(peer_id):
-			friends.append(peer_id)
+		var friends = get_phonebook()
+		if not friends.has(peer_node_id):
+			friends.append(peer_node_id)
 			_config.set_value(CONFIG_SECTION_FRIENDS, "list", friends)
 			_config.save_encrypted_pass(config_path, encryption_password)
-			print("[PHONEBOOK] Peer active! Saved to phonebook: ", peer_id)
-			
-			friend_confirmed.emit(peer_id)
-			
-		pending_friends.erase(peer_id)
+			friend_confirmed.emit(peer_node_id)
 
 # ==========================================
 # LOBBY & GOSSIP ROUTING
@@ -204,7 +207,7 @@ func _on_watchdog_tick() -> void:
 func _on_gossip_received(topic: String, message: PackedByteArray) -> void:
 	var msg = JSON.parse_string(message.get_string_from_utf8())
 	if not msg: return
-	
+	print("gossip receeive: ", topic, " - ",  msg)
 	if topic == global_topic and msg.get("type") == "server_ad":
 		_confirm_friend(msg.host_node)
 		if msg.topic != active_room_topic:
