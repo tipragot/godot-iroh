@@ -13,7 +13,7 @@ use tokio::{
     sync::mpsc::{Receiver, UnboundedSender, channel, error::TryRecvError, unbounded_channel},
 };
 
-use crate::{ALPN, IrohRuntime};
+use crate::{ALPN, IrohRuntime, lan_lookup};
 
 pub struct IrohListener {
     pub(crate) endpoint: Endpoint,
@@ -24,6 +24,7 @@ pub struct IrohListener {
 impl IrohListener {
     pub async fn new() -> anyhow::Result<Self> {
         let endpoint = Endpoint::builder(presets::N0)
+            .address_lookup(lan_lookup(true))
             .alpns(vec![ALPN.to_vec()])
             .bind()
             .await?;

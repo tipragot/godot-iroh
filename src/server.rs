@@ -61,6 +61,28 @@ impl IrohServer {
         self.listener.connection_string().to_godot_owned()
     }
 
+    /// Sets the text advertised with this server on the local network (up to 245 bytes, e.g.
+    /// a game name and the player count), received by `IrohBrowser.host_found`. An empty text
+    /// removes it. The server is found on the LAN even without it.
+    #[func]
+    fn set_lan_info(&self, info: GString) {
+        let info = info.to_string();
+        let user_data = if info.is_empty() {
+            None
+        } else {
+            match info.parse() {
+                Ok(user_data) => Some(user_data),
+                Err(error) => {
+                    godot_error!("invalid LAN info: {error}");
+                    return;
+                }
+            }
+        };
+        self.listener
+            .endpoint
+            .set_user_data_for_address_lookup(user_data);
+    }
+
     /// Connect to an other server using the connection string.
     #[func]
     fn connect(&mut self, connection_string: GString) {

@@ -8,9 +8,21 @@ use tokio::{
 
 const ALPN: &[u8] = b"godot-iroh/0.1";
 
+/// mDNS service under which servers advertise themselves on the local network.
+const LAN_SERVICE: &str = "godot-iroh";
+
+mod browser;
 mod client;
 mod connection;
 mod server;
+
+/// Local network address lookup (mDNS): a connection string then resolves on a LAN without
+/// internet access. Servers `advertise`, clients and browsers only listen.
+fn lan_lookup(advertise: bool) -> iroh_mdns_address_lookup::MdnsAddressLookupBuilder {
+    iroh_mdns_address_lookup::MdnsAddressLookup::builder()
+        .service_name(LAN_SERVICE)
+        .advertise(advertise)
+}
 
 struct MyExtension;
 

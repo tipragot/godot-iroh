@@ -114,6 +114,28 @@ multiplayer.connection_failed.connect(func():
 ```
 This allows you to gracefully handle cases where the client cannot connect to the server.
 
+### Local Network
+
+Servers are also found on the local network (mDNS): a connection string works on a LAN without
+internet access. To let players pick a game without exchanging a connection string, advertise
+a text with the server and list the servers from an `IrohBrowser` node:
+
+```gdscript
+# server
+server.set_lan_info("My game - 2/4 players")
+
+# client
+var browser := IrohBrowser.new()
+browser.host_found.connect(func(connection_string, info):
+    print("found ", info)  # e.g. show a button that calls IrohClient.connect(connection_string)
+)
+browser.host_lost.connect(func(connection_string): print("gone ", connection_string))
+add_child(browser)  # listens while in the scene tree
+```
+
+`host_found` is emitted again when the advertised text changes. On Android, receiving multicast
+may need a Wi-Fi multicast lock (`CHANGE_WIFI_MULTICAST_STATE` permission).
+
 ## Examples
 
 For more examples, see the [examples](examples/) folder in this repository.

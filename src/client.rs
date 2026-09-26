@@ -11,7 +11,7 @@ use tokio::sync::mpsc::error::TryRecvError;
 use tokio::task::JoinHandle;
 
 use crate::connection::IrohConnection;
-use crate::{ALPN, IrohRuntime};
+use crate::{ALPN, IrohRuntime, lan_lookup};
 
 enum ClientStatus {
     Connecting(JoinHandle<anyhow::Result<(Endpoint, i32, IrohConnection)>>),
@@ -47,6 +47,7 @@ impl IrohClient {
         let node_id = node_id.to_string();
         let handle = IrohRuntime::spawn(async {
             let endpoint = Endpoint::builder(presets::N0)
+                .address_lookup(lan_lookup(false))
                 .alpns(vec![ALPN.to_vec()])
                 .bind()
                 .await?;
