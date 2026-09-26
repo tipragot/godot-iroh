@@ -6,7 +6,7 @@ use bytes::{Buf, Bytes};
 use godot::{classes::multiplayer_peer::TransferMode, global::godot_error, prelude::godot_warn};
 use iroh::{
     Endpoint, EndpointId,
-    endpoint::{Connection, VarInt},
+    endpoint::{Connection, VarInt, presets},
 };
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
@@ -23,7 +23,7 @@ pub struct IrohListener {
 
 impl IrohListener {
     pub async fn new() -> anyhow::Result<Self> {
-        let endpoint = Endpoint::builder()
+        let endpoint = Endpoint::builder(presets::N0)
             .alpns(vec![ALPN.to_vec()])
             .bind()
             .await?;
