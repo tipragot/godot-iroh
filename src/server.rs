@@ -85,7 +85,7 @@ impl IrohServer {
     ///
     /// The dictionary maps each peer's identifier to its connection string.
     #[func]
-    fn connected_peers(&self) -> VarDictionary {
+    fn connected_peers(&self) -> Dictionary<i32, GString> {
         self.peers
             .iter()
             .map(|(id, connection)| (*id, connection.connection_string().to_godot_owned()))
