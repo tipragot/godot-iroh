@@ -23,7 +23,10 @@ Godot Iroh currently supports exports for the following platforms:
 - **Windows**
 - **macOS**
 - **Linux**
-- **Android**
+
+### Android/IOS Export
+
+Currently this is not supported, but should be possible as all the libraries support it.
 
 ### Web (WASM) Export Status
 
