@@ -6,7 +6,7 @@ use godot::classes::multiplayer_peer::{ConnectionStatus, TransferMode};
 use godot::classes::{IMultiplayerPeerExtension, MultiplayerPeerExtension};
 use godot::global::Error;
 use godot::prelude::*;
-use iroh::Endpoint;
+use iroh::{Endpoint, endpoint::presets};
 use tokio::sync::mpsc::error::TryRecvError;
 use tokio::task::JoinHandle;
 
@@ -46,7 +46,7 @@ impl IrohClient {
     fn connect(node_id: GString) -> Gd<Self> {
         let node_id = node_id.to_string();
         let handle = IrohRuntime::spawn(async {
-            let endpoint = Endpoint::builder()
+            let endpoint = Endpoint::builder(presets::N0)
                 .alpns(vec![ALPN.to_vec()])
                 .bind()
                 .await?;
