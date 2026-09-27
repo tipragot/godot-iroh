@@ -16,14 +16,14 @@ struct MyExtension;
 
 #[gdextension]
 unsafe impl ExtensionLibrary for MyExtension {
-    fn on_level_init(level: InitLevel) {
-        if level == InitLevel::Scene {
+    fn on_stage_init(stage: InitStage) {
+        if stage == InitStage::Scene {
             Engine::singleton().register_singleton("IrohRuntime", &IrohRuntime::new_alloc());
         }
     }
 
-    fn on_level_deinit(level: InitLevel) {
-        if level == InitLevel::Scene {
+    fn on_stage_deinit(stage: InitStage) {
+        if stage == InitStage::Scene {
             let mut engine = Engine::singleton();
             let singleton = engine
                 .get_singleton("IrohRuntime")
