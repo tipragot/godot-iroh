@@ -43,7 +43,7 @@ impl IrohClient {
     /// and the error message will be returned by the
     /// [Self::connection_error] function.
     #[func]
-    fn connect(node_id: GString) -> Gd<Self> {
+    fn network_connect(node_id: GString) -> Gd<Self> {
         let node_id = node_id.to_string();
         let handle = IrohRuntime::spawn(async {
             let endpoint = Endpoint::builder(presets::N0)

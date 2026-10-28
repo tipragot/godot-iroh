@@ -63,7 +63,7 @@ impl IrohServer {
 
     /// Connect to an other server using the connection string.
     #[func]
-    fn connect(&mut self, connection_string: GString) {
+    fn network_connect(&mut self, connection_string: GString) {
         let node_id = connection_string.to_string();
         let peer_id = {
             self.last_peer_id = (self.last_peer_id + 1) % i32::MAX;
