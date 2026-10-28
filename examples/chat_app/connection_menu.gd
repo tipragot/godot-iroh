@@ -23,7 +23,7 @@ func _on_connected_to_server() -> void:
 	visible = false
 
 func _on_join_room_pressed() -> void:
-	var client := IrohClient.connect($JoinBox/ConnectionString.text)
+	var client := IrohClient.network_connect($JoinBox/ConnectionString.text)
 	multiplayer.multiplayer_peer = client
 	$JoinBox/ConnectionString.editable = false
 	$JoinBox/JoinRoom.disabled = true

@@ -99,7 +99,7 @@ After initializing the peer, you can use the [High-level multiplayer](https://do
 To connect to an existing server using the connection string:
 
 ```gdscript
-var client = IrohClient.connect("CONNECTION_STRING")
+var client = IrohClient.network_connect("CONNECTION_STRING")
 multiplayer.multiplayer_peer = client
 ```
 
